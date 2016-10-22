@@ -76,16 +76,11 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 	double w3 = fabs(d3 - d4);
 
 
-	for (int i = 2; i < count - 2; i++) {
+	for (int i = 2; i < count - 2 - 1; i++) {
 		coefsOfPolynFunc[i] = yvals[i];
 
-//		printf("d %d %f %f %f\n", i, d1, d2, d3);
-
-//		printf("w1 %f w1 %f wnn %f\n",w1, w2, w3);
 		double wP = w3;
 		double wM = w1;
-
-		printf("%d no tak: %f %f | %f %f\n", i, wP, wM, d2, d3);
 
 		if (FP_ZERO == fpclassify(wP) && FP_ZERO == fpclassify(wM)) {
 			double xv = xvals[i];
@@ -107,6 +102,31 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 		w2 = w3;
 		w3 = fabs(d3 - d4);
 	}
+
+	int i  = count - 3;
+	//last iteration
+	coefsOfPolynFunc[i] = yvals[i];
+
+	double wP = w3;
+	double wM = w1;
+
+	if (FP_ZERO == fpclassify(wP) && FP_ZERO == fpclassify(wM)) {
+		double xv = xvals[i];
+		double xvP = xvals[i + 1];
+		double xvM = xvals[i - 1];
+		firstDerivatives[i] = (((xvP - xv) * d2) + ((xv - xvM) * d3)) / (xvP - xvM);
+
+		printf("tu taky\n");
+	} else {
+		firstDerivatives[i] = ((wP * d2) + (wM * d3)) / (wP + wM);
+	}
+
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+
 
 	coefsOfPolynFunc[count - 2] = yvals[count - 2];
 	coefsOfPolynFunc[count - 1] = yvals[count - 1];

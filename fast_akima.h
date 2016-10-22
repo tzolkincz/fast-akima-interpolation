@@ -20,7 +20,6 @@ public:
 	const int MINIMUM_NUMBER_POINTS = 5;
 	const int SIMD_WIDTH = 4;
 
-
 	FastAkima();
 
 	/**
