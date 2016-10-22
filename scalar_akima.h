@@ -18,6 +18,7 @@ class ScalarAkima {
 public:
 	ScalarAkima();
 	double* interpolate(int count, double* xvals, double* yvals);
+	double* interpolateFastestYet(int count, double* xvals, double* yvals);
 
 private:
 	double differentiateThreePointScalar(double* xvals, double* yvals,

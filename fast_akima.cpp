@@ -26,6 +26,166 @@ FastAkima::FastAkima() {
 //  __builtin_ia32_storeupd(addr_hi, v128);
 //}
 
+inline __m256d _mm256_rotate_left_pd(__m256d a) {
+	return _mm256_permute4x64_pd(a, 0b00111001);
+}
+
+inline __m256d _mm256_rotate_right_pd(__m256d a) {
+	return _mm256_permute4x64_pd(a, 0b10010011);
+}
+
+inline __m256d _mm256_reverse_pd(__m256d a) {
+	return _mm256_permute4x64_pd(a, 0b00011011);
+}
+
+inline __m256d _mm256_shiftl_and_load_next_pd(__m256d toShift, __m256d toLoadNext) {
+	return _mm256_blend_pd(_mm256_rotate_left_pd(toShift), _mm256_reverse_pd(toLoadNext), 0b1000);
+}
+
+inline __m256d _mm256_shiftr_and_load_next_pd(__m256d toLoadNext, __m256d toShift) {
+	return _mm256_blend_pd(_mm256_reverse_pd(toLoadNext), _mm256_rotate_right_pd(toShift), 0b1110);
+}
+
+
+
+__m256d zero = _mm256_setzero_pd();
+__m256i intTrue = _mm256_set1_epi32(0xFFFFFFFF);
+
+void storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d* d, __m256d* x, __m256d w1, __m256d w2) {
+	//wP = wnn
+	//wM = w1
+
+	//creates vector [W1_2, W1_3, W2_0, W2_1]
+	__m256d wnn = _mm256_permute2f128_pd(w1, w2, 0b00100001);
+
+	__m256d cond1 = _mm256_cmp_pd(wnn, zero, _CMP_EQ_OQ);
+	__m256d cond2 = _mm256_cmp_pd(w1, zero, _CMP_EQ_OQ);
+
+	__m256d dPrev = _mm256_shiftl_and_load_next_pd(d[0], d[1]);
+	//creates vector [d0_2, d0_3, d1_0, d1_1]
+	__m256d dCurr = _mm256_permute2f128_pd(d[0], d[1], 0b00100001);
+
+
+	__m256d condAnd = _mm256_and_pd(cond1, cond2);
+	if (_mm256_testz_pd(cond1, cond2)) {
+		//		__m256d fd = _mm256_add_pd(_mm256_mul_pd(wnn, d[1]), _mm256_mul_pd(w1, d[2]));
+		//		fd = _mm256_div_pd(fd, _mm256_add_pd(wnn, w1));
+		//		_mm256_store_pd(&firstDerivatives[fdStoreIndex], fd);
+
+		__m256d fd = _mm256_add_pd(_mm256_mul_pd(wnn, dPrev), _mm256_mul_pd(w1, dCurr));
+		fd = _mm256_div_pd(fd, _mm256_add_pd(wnn, w1));
+		_mm256_store_pd(&firstDerivatives[fdStoreIndex], fd);
+	} else {
+		//compute special cases
+		//creates vector [x0_2, x0_3, x1_0, x1_1]
+		__m256d xv = _mm256_permute2f128_pd(x[0], x[1], 0b00100001);
+		__m256d xvP = _mm256_shiftr_and_load_next_pd(x[0], x[1]);
+		__m256d xvM = _mm256_shiftl_and_load_next_pd(x[0], x[1]);
+
+		__m256d fd = _mm256_mul_pd(_mm256_sub_pd(xvP, xv), dPrev);
+		fd = _mm256_add_pd(fd, _mm256_mul_pd(_mm256_sub_pd(xv, xvM), dCurr));
+		fd = _mm256_div_pd(fd, _mm256_sub_pd(xvP, xvM));
+
+		__m256i storeMask = _mm256_castpd_si256(condAnd);
+		_mm256_maskstore_pd(&firstDerivatives[fdStoreIndex], storeMask, fd);
+
+		//compute ok cases
+		fd = _mm256_add_pd(_mm256_mul_pd(wnn, dPrev), _mm256_mul_pd(w1, dCurr));
+		fd = _mm256_div_pd(fd, _mm256_add_pd(wnn, w1));
+		_mm256_maskstore_pd(&firstDerivatives[fdStoreIndex], _mm256_andnot_si256(storeMask, intTrue), fd);
+	}
+}
+
+void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc) {
+
+	double* firstDerivatives = &coefsOfPolynFunc[count];
+
+	//stream load: hint for cpu to NOT cache data in L1
+	//	__m256d y0 =  _mm256_castsi256_pd(_mm256_stream_load_si256(reinterpret_cast<__m256i*>(&yvals[0])));
+	//	__m256d x0 =  _mm256_castsi256_pd(_mm256_stream_load_si256(reinterpret_cast<__m256i*>(&xvals[0])));
+
+	__m256d x[4];
+	__m256d y[4];
+	__m256d d[3];
+
+	x[0] = _mm256_loadu_pd(&xvals[0]);
+	y[0] = _mm256_loadu_pd(&yvals[0]);
+
+
+
+	for (int i = 1; i <= 3; i++) {
+		x[i] = _mm256_loadu_pd(&xvals[i * SIMD_WIDTH]);
+		y[i] = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
+
+		__m256d xn = _mm256_shiftl_and_load_next_pd(x[i - 1], x[i]);
+		__m256d yn = _mm256_shiftl_and_load_next_pd(y[i - 1], y[i]);
+
+		__m256d dx = _mm256_sub_pd(x[i - 1], xn);
+		__m256d dy = _mm256_sub_pd(y[i - 1], yn);
+
+		d[i - 1] = _mm256_div_pd(dy, dx);
+	}
+
+	__m256d d1n = _mm256_shiftl_and_load_next_pd(d[0], d[1]);
+	__m256d w1 = _mm256_abs_pd(_mm256_sub_pd(d[0], d1n));
+
+	__m256d d2n = _mm256_shiftl_and_load_next_pd(d[1], d[2]);
+	__m256d w2 = _mm256_abs_pd(_mm256_sub_pd(d[1], d2n));
+
+
+
+	//store fist coefs
+	_mm256_store_pd(&coefsOfPolynFunc[0 * SIMD_WIDTH], y[0]);
+	_mm256_store_pd(&coefsOfPolynFunc[1 * SIMD_WIDTH], y[1]);
+	_mm256_store_pd(&coefsOfPolynFunc[2 * SIMD_WIDTH], y[2]);
+
+
+	int i = 3;
+	for (; i <= (count - 2) / SIMD_WIDTH; i++) {
+		//will it blend? watch?v=lAl28d6tbko
+		_mm256_store_pd(&coefsOfPolynFunc[i * SIMD_WIDTH], y[i]);
+
+		int fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
+
+		storeFirstDerivats(fdStoreIndex, firstDerivatives, d, x, w1, w2);
+
+		x[0] = x[1];
+		x[1] = x[2];
+		x[2] = x[3];
+		x[3] = _mm256_loadu_pd(&xvals[(i + 1) * SIMD_WIDTH]);
+
+		y[0] = y[1];
+		y[1] = y[2];
+		y[2] = y[3];
+		y[3] = _mm256_loadu_pd(&yvals[(i + 1) * SIMD_WIDTH]);
+
+
+		d[0] = d[1];
+		d[1] = d[2];
+		__m256d yn = _mm256_shiftl_and_load_next_pd(y[2], y[3]);
+		__m256d xn = _mm256_shiftl_and_load_next_pd(x[2], x[3]);
+
+		__m256d dy = _mm256_sub_pd(y[2], yn);
+		__m256d dx = _mm256_sub_pd(x[2], xn);
+		d[2] = _mm256_div_pd(dy, dx);
+
+
+		w1 = w2;
+		__m256d d2n = _mm256_shiftl_and_load_next_pd(d[1], d[2]);
+		w2 = _mm256_abs_pd(_mm256_sub_pd(d[1], d2n));
+	}
+
+
+	int fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
+//	_mm256_store_pd(&coefsOfPolynFunc[i * SIMD_WIDTH], y[i]);
+	storeFirstDerivats(fdStoreIndex, firstDerivatives, d, x, w1, w2);
+
+	printf("sic: %d\n", i * SIMD_WIDTH);
+	//zbytek poresit skalarni implementaci
+
+
+}
+
 double* FastAkima::interpolate(int count, double* xvals, double* yvals) {
 	if (count < MINIMUM_NUMBER_POINTS) {
 		return (double*) - 1;
@@ -40,17 +200,22 @@ double* FastAkima::interpolate(int count, double* xvals, double* yvals) {
 	//@TODO misto pole pro prvni derivaci rovnou pouzit koeficientni pole
 	//@TODO zkusit jesete neco vyhnojit rovnou v prvni smycce - treba prvni koef.
 
+		computeHeadAndTailOfFirstDerivates(count, xvals, yvals, firstDerivatives);
 
-	computeDiffsAndWeights(count, xvals, yvals, differences, weights, &coefsOfPolynFunc[0]);
+
+
+	computeFirstDerivatesWoTmpArr(count, xvals, yvals, coefsOfPolynFunc);
+
+
+//		computeDiffsAndWeights(count, xvals, yvals, differences, weights, &coefsOfPolynFunc[0]);
 
 	// Prepare Hermite interpolation scheme.
 
-	computeFirstDerivates(count, xvals, differences, weights, firstDerivatives);
+	//	computeFirstDerivates(count, xvals, differences, weights, firstDerivatives);
 
 	free(differences);
 	free(weights);
 
-	computeHeadAndTailOfFirstDerivates(count, xvals, yvals, firstDerivatives);
 
 	//interpolate hermite sorted
 	computePolynCoefs(count, xvals, coefsOfPolynFunc);
@@ -86,7 +251,7 @@ void FastAkima::computeDiffsAndWeights(int count, double* xvals, double* yvals, 
 		_mm256_store_pd(&ysInternalCopy[i], yvs);
 
 		__m256d w = _mm256_load_pd(&differences[weightIndex]);
-		_mm256_store_pd(&weights[weightIndex], avx_abs_pd(_mm256_sub_pd(w, dPrev)));
+		_mm256_store_pd(&weights[weightIndex], _mm256_abs_pd(_mm256_sub_pd(w, dPrev)));
 
 		dPrev = d;
 		weightIndex += SIMD_WIDTH;

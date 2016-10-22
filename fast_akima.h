@@ -40,6 +40,7 @@ private:
 	void computeFirstDerivates(int count, double* xvals, double* differences, double* weights, double* firstDerivatives);
 	void computeHeadAndTailOfFirstDerivates(int count, double* xvals, double* yvals, double* firstDerivatives);
 	void computePolynCoefs(int count, double* xvals, double* coefsOfPolynFunc);
+	void computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc);
 
 };
 

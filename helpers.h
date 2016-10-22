@@ -17,7 +17,7 @@
  * @param x
  * @return
  */
-__m256d avx_abs_pd(__m256d x);
+__m256d _mm256_abs_pd(__m256d x);
 
 
 /**
