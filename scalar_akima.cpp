@@ -46,10 +46,10 @@ double* ScalarAkima::interpolateHermiteScalar(int count, double* xvals, double* 
 		double fd = firstDerivatives[i];
 		double fdP = firstDerivatives[i + 1];
 
-		//		coefsOfPolynFunc[0 * dimSize + i] = yv;
-		//		coefsOfPolynFunc[1 * dimSize + i] = firstDerivatives[i];
-		coefsOfPolynFunc[2 * dimSize + i] = (3 * (yvP - yv) / w - 2 * fd - fdP) / w;
-		coefsOfPolynFunc[3 * dimSize + i] = (2 * (yv - yvP) / w + fd + fdP) / w2;
+		double divTmp = (yv - yvP) / w;
+
+		coefsOfPolynFunc[2 * dimSize + i] = (-3 * divTmp - 2 * fd - fdP) / w;
+		coefsOfPolynFunc[3 * dimSize + i] = (2 * divTmp + fd + fdP) / w2;
 	}
 
 	return coefsOfPolynFunc;

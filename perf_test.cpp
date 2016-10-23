@@ -27,7 +27,7 @@ void simplePerfTest() {
 	std::cout << "simple perf test 1" << std::endl;
 
 	//init values
-	int count = 10*1000*1000;
+	int count = 100*1000*1000;
 
 	double* x = (double*) aligned_alloc(64, sizeof (double) *count);
 	double* y = (double*) aligned_alloc(64, sizeof (double) *count);
@@ -51,23 +51,23 @@ void simplePerfTest() {
 
 
 
-//	t1 = timeNow();
-//	ScalarAkima scalarImpl;
-//	double* coefsOfScalar = scalarImpl.interpolate(count, x, y);
-//
-//	std::cout << "Scalar impl took: " << durationMs(timeNow() - t1) << " ms\n";
-//	printf("%f %f\n", coefsOfScalar[100], coefsOfScalar[100000]);
-//
-//	free(coefsOfScalar);
-//
-//
-//	t1 = timeNow();
-//        double* coefsOfFastScalar = scalarImpl.interpolateFastestYet(count, x, y);
-//
-//        std::cout << "Scalar fast-impl took: " << durationMs(timeNow() - t1) << " ms\n";
-//        printf("%f %f\n", coefsOfFastScalar[100], coefsOfFastScalar[100000]);
-//
-//        free(coefsOfFastScalar);
+	t1 = timeNow();
+	ScalarAkima scalarImpl;
+	double* coefsOfScalar = scalarImpl.interpolate(count, x, y);
+
+	std::cout << "Scalar impl took: " << durationMs(timeNow() - t1) << " ms\n";
+	printf("%f %f\n", coefsOfScalar[100], coefsOfScalar[100000]);
+
+	free(coefsOfScalar);
+
+
+	t1 = timeNow();
+        double* coefsOfFastScalar = scalarImpl.interpolateFastestYet(count, x, y);
+
+        std::cout << "Scalar fast-impl took: " << durationMs(timeNow() - t1) << " ms\n";
+        printf("%f %f\n", coefsOfFastScalar[100], coefsOfFastScalar[100000]);
+
+        free(coefsOfFastScalar);
 
 
 	free(x);

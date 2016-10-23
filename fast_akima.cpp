@@ -14,7 +14,8 @@
 
 const __m256d zero = _mm256_setzero_pd();
 const __m256i intTrue = _mm256_set1_epi32(0xFFFFFFFF);
-const __m256d three = _mm256_set1_pd(3);
+const __m256d MINUS_THREE_PD = _mm256_set1_pd(-3);
+const __m256d TWO_PD = _mm256_set1_pd(2);
 
 FastAkima::FastAkima() {
 
@@ -120,22 +121,24 @@ void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m2
 	__m256d w2 = _mm256_mul_pd(w, w);
 
 	__m256d yvMinusYvNext = _mm256_sub_pd(yv, yvNext);
-	__m256d yvNextMinuxYv = _mm256_sub_pd(yvNext, yv);
+//	__m256d yvNextMinuxYv = _mm256_sub_pd(yvNext, yv);
 	__m256d fdPlusFdNext = _mm256_add_pd(fd, fdNext);
 
 	//@TODO dopryč
 	int SIMD_WIDTH = 4;
 
-	__m256d coef3 = _mm256_div_pd(_mm256_mul_pd(three, yvNextMinuxYv), w);
+	//optimaize one division
+	__m256d tmpDiv = _mm256_div_pd(yvMinusYvNext, w);
+
+	__m256d coef3 = _mm256_mul_pd(MINUS_THREE_PD, tmpDiv);
 	coef3 = _mm256_sub_pd(coef3, _mm256_add_pd(fd, fd));
 	coef3 = _mm256_div_pd(_mm256_sub_pd(coef3, fdNext), w);
-//	_mm256_store_pd(&coefsOfPolynFunc[2 * count + i * SIMD_WIDTH], coef3);
 	_mm256_stream_pd(&coefsOfPolynFunc[2 * count + i * SIMD_WIDTH], coef3);
 
-	__m256d coef4 = _mm256_div_pd(_mm256_add_pd(yvMinusYvNext, yvMinusYvNext), w);
+	//multiply has better throughput than add - eg 2*a is better than a+a
+	__m256d coef4 = _mm256_mul_pd(TWO_PD, tmpDiv);
 	coef4 = _mm256_add_pd(coef4, fdPlusFdNext);
 	coef4 = _mm256_div_pd(coef4, w2);
-//	_mm256_store_pd(&coefsOfPolynFunc[3 * count + i * SIMD_WIDTH], coef4);
 	_mm256_stream_pd(&coefsOfPolynFunc[3 * count + i * SIMD_WIDTH], coef4);
 }
 
