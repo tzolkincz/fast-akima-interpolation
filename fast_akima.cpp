@@ -52,6 +52,66 @@ inline __m256d _mm256_shiftr_and_load_next_pd(__m256d toLoadNext, __m256d toShif
 }
 
 
+
+void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc, double* xvals, double* yvals) {
+
+	fdStoreIndex--;
+	int quantity = count - fdStoreIndex; //count of elements processed by scalar code
+	int offset = fdStoreIndex; //from where starts scalar code
+
+	printf("scalar quty: %d\n", quantity);
+
+	double* differences = (double*) malloc(sizeof (double) * quantity);
+	double* weights = (double*) malloc(sizeof (double) * quantity);
+	double* firstDerivatives = &coefsOfPolynFunc[count];
+
+	for (int i = fdStoreIndex; i < count - 1; i++) {
+		differences[i - offset] = (yvals[i + 1] - yvals[i]) / (xvals[i + 1] - xvals[i]);
+	}
+
+	for (int i = fdStoreIndex; i < count - 1; i++) {
+		weights[i - offset] = fabs(differences[i - offset] - differences[i  - offset - 1]);
+		coefsOfPolynFunc[i] = yvals[i];
+	}
+
+	// Prepare Hermite interpolation scheme.
+
+	for (int i = fdStoreIndex; i < count - 2; i++) {
+		double wP = weights[i - offset + 1];
+		double wM = weights[i  - offset- 1];
+
+		if (FP_ZERO == fpclassify(wP) && FP_ZERO == fpclassify(wM)) {
+			double xv = xvals[i];
+			double xvP = xvals[i + 1];
+			double xvM = xvals[i - 1];
+			firstDerivatives[i] = (((xvP - xv) * differences[i - offset - 1])
+					+ ((xv - xvM) * differences[i - offset])) / (xvP - xvM);
+		} else {
+			firstDerivatives[i] = ((wP * differences[i  - offset- 1])
+					+ (wM * differences[i - offset])) / (wP + wM);
+		}
+	}
+
+	free(differences);
+	free(weights);
+
+	int dimSize = count;
+	for (int i = fdStoreIndex; i < count - 2; i++) {
+		double w = xvals[i + 1] - xvals[i];
+		double w2 = w * w;
+
+		double yv = yvals[i];
+		double yvP = yvals[i + 1];
+
+		double fd = firstDerivatives[i];
+		double fdP = firstDerivatives[i + 1];
+
+		coefsOfPolynFunc[2 * dimSize + i] = (3 * (yvP - yv) / w - 2 * fd - fdP) / w;
+		coefsOfPolynFunc[3 * dimSize + i] = (2 * (yv - yvP) / w + fd + fdP) / w2;
+	}
+
+}
+
 void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m256d xv, __m256d xvNext,
 		__m256d yv, __m256d yvNext, double* coefsOfPolynFunc) {
 
@@ -256,6 +316,7 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 
 	//@TODOzbytek poresit skalarni implementaci
 
+	computeRestCoefsScalar(count, fdStoreIndex, coefsOfPolynFunc, xvals, yvals);
 
 }
 

@@ -34,7 +34,7 @@ void simpleTest() {
 	std::cout << "newsimpletest test 1" << std::endl;
 
 	//init values
-	int count = 20;
+	int count = 24;
 
 	double* x = (double*) malloc(sizeof (double) *count);
 	double* y = (double*) malloc(sizeof (double) *count);
@@ -69,6 +69,11 @@ void simpleTest() {
 	y[i++] = 3.0;
 	y[i++] = 2.0;
 
+	y[i++] = 4.0;
+	y[i++] = 5.0;
+	y[i++] = 3.0;
+	y[i++] = 3.0;
+	y[i++] = 2.0;
 
 	FastAkima fastAkimaImpl;
 	double* coefsOfFastImpl = fastAkimaImpl.interpolate(count, x, y);

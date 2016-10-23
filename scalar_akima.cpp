@@ -105,6 +105,13 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 
 	int i  = count - 3;
 	//last iteration
+
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+	//ACHTUNG COPY PASTE CODE
+
 	coefsOfPolynFunc[i] = yvals[i];
 
 	double wP = w3;
