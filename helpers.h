@@ -17,8 +17,9 @@
  * @param x
  * @return
  */
-__m256d _mm256_abs_pd(__m256d x);
-
+inline __m256d _mm256_abs_pd(__m256d x) {
+	return _mm256_max_pd(_mm256_sub_pd(_mm256_setzero_pd(), x), x);
+}
 
 /**
  * Prints double intrinsics vector

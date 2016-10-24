@@ -4,6 +4,7 @@
 
 //@TODO remove me
 #include <stdio.h>
+#include <algorithm>
 
 #include "scalar_akima.h"
 
@@ -76,6 +77,7 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 	double w3 = fabs(d3 - d4);
 
 
+	double fd, fdPrev;
 	for (int i = 2; i < count - 2 - 1; i++) {
 		coefsOfPolynFunc[i] = yvals[i];
 
@@ -83,15 +85,30 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 		double wM = w1;
 
 		if (FP_ZERO == fpclassify(wP) && FP_ZERO == fpclassify(wM)) {
-			double xv = xvals[i];
-			double xvP = xvals[i + 1];
+			double xv = xvals[i];		// no need to optimize this,
+			double xvP = xvals[i + 1];	// expecting to be very rare case
 			double xvM = xvals[i - 1];
-			firstDerivatives[i] = (((xvP - xv) * d2) + ((xv - xvM) * d3)) / (xvP - xvM);
-
-			printf("tu taky\n");
+			fd = (((xvP - xv) * d2) + ((xv - xvM) * d3)) / (xvP - xvM);
 		} else {
-			firstDerivatives[i] = ((wP * d2) + (wM * d3)) / (wP + wM);
+			fd = ((wP * d2) + (wM * d3)) / (wP + wM);
 		}
+
+		if(i!=2) { //is not first loop
+			//copute 3. and 4. coeficients
+			double w = xvals[i] - xvals[i - 1];
+			double w_2 = w * w;
+
+			double yv = yvals[i-1];
+			double yvP = yvals[i];
+
+			//saving one division
+			double divTmp = (yv - yvP) / w;
+			coefsOfPolynFunc[2 * count + i - 1] = (-3 * divTmp - 2 * fdPrev - fd) / w;
+			coefsOfPolynFunc[3 * count + i - 1] = (2 * divTmp + fdPrev + fd) / w_2;
+		}
+
+		fdPrev = fd;
+		firstDerivatives[i] = fd;
 
 		d1 = d2;
 		d2 = d3;
@@ -121,19 +138,55 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 		double xv = xvals[i];
 		double xvP = xvals[i + 1];
 		double xvM = xvals[i - 1];
-		firstDerivatives[i] = (((xvP - xv) * d2) + ((xv - xvM) * d3)) / (xvP - xvM);
-
-		printf("tu taky\n");
+		fd = (((xvP - xv) * d2) + ((xv - xvM) * d3)) / (xvP - xvM);
 	} else {
-		firstDerivatives[i] = ((wP * d2) + (wM * d3)) / (wP + wM);
+		fd = ((wP * d2) + (wM * d3)) / (wP + wM);
 	}
 
+	//copute 3. and 4. coeficients
+	double w = xvals[i] - xvals[i - 1];
+	double w_2 = w * w;
+
+	double yv = yvals[i-1];
+	double yvP = yvals[i];
+
+	//saving one division
+	double divTmp = (yv - yvP) / w;
+	coefsOfPolynFunc[2 * count + i - 1] = (-3 * divTmp - 2 * fdPrev - fd) / w;
+	coefsOfPolynFunc[3 * count + i - 1] = (2 * divTmp + fdPrev + fd) / w_2;
+
+	fdPrev = fd;
+	firstDerivatives[i] = fd;
+
 	//ACHTUNG COPY PASTE CODE
 	//ACHTUNG COPY PASTE CODE
 	//ACHTUNG COPY PASTE CODE
 	//ACHTUNG COPY PASTE CODE
 	//ACHTUNG COPY PASTE CODE
 
+
+	//compute last elements of 3. and 4. coefs
+
+	i++;
+	{
+		double w = xvals[i] - xvals[i - 1];
+		double w_2 = w * w;
+
+		double yv = yvals[i - 1];
+		double yvP = yvals[i];
+//		printf("%d %d\n", i, count);
+		//saving one division
+		double divTmp = (yv - yvP) / w;
+
+//		printf("wth? %f %f | %f %f %f\n", w, divTmp, fd, fdPrev, xvals[i]);
+		coefsOfPolynFunc[2 * count + i - 1] = (-3 * divTmp - 2 * fdPrev - fd) / w;
+		coefsOfPolynFunc[3 * count + i - 1] = (2 * divTmp + fdPrev + fd) / w_2;
+	}
+
+
+
+
+//	printf("ASDFASDF");
 
 	coefsOfPolynFunc[count - 2] = yvals[count - 2];
 	coefsOfPolynFunc[count - 1] = yvals[count - 1];
@@ -145,6 +198,7 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 	firstDerivatives[count - 1] = differentiateThreePointScalar(xvals, yvals, count - 1,
 			count - 3, count - 2, count - 1);
 
+//	return coefsOfPolynFunc;
 	return interpolateHermiteScalar(count, xvals, yvals, coefsOfPolynFunc);
 }
 

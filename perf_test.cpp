@@ -27,7 +27,7 @@ void simplePerfTest() {
 	std::cout << "simple perf test 1" << std::endl;
 
 	//init values
-	int count = 100*1000*1000;
+	int count = 10*1000*1000;
 
 	double* x = (double*) aligned_alloc(64, sizeof (double) *count);
 	double* y = (double*) aligned_alloc(64, sizeof (double) *count);
