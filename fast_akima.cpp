@@ -115,10 +115,7 @@ inline void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNex
 
 	//@TODO diff of xNext and x is allready computed (two scopes before)
 	__m256d w = _mm256_sub_pd(xvNext, xv);
-	__m256d w2 = _mm256_mul_pd(w, w);
-
 	__m256d yvMinusYvNext = _mm256_sub_pd(yv, yvNext);
-	__m256d fdPlusFdNext = _mm256_add_pd(fd, fdNext);
 
 	//@TODO dopryč
 	int SIMD_WIDTH = 4;
@@ -130,6 +127,9 @@ inline void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNex
 	__m256d coef3 = _mm256_fmsub_pd(MINUS_THREE_PD, tmpDiv, _mm256_mul_pd(TWO_PD, fd));
 	coef3 = _mm256_div_pd(_mm256_sub_pd(coef3, fdNext), w);
 	_mm256_stream_pd(&coefsOfPolynFunc[2 * count + i * SIMD_WIDTH], coef3);
+
+	__m256d fdPlusFdNext = _mm256_add_pd(fd, fdNext);
+	__m256d w2 = _mm256_mul_pd(w, w);
 
 	__m256d coef4 = _mm256_fmadd_pd(TWO_PD, tmpDiv, fdPlusFdNext);
 	coef4 = _mm256_div_pd(coef4, w2);
