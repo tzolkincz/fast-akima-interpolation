@@ -60,8 +60,10 @@ double* ScalarAkima::interpolate(int count, double* xvals, double* yvals) {
 
 	double* coefsOfPolynFunc = (double*) malloc(sizeof (double) * 4 * count);
 	double* firstDerivatives = &coefsOfPolynFunc[count];
-
-
+//alglib mklib popř octave/matlab/wolfram gcc
+//get levels rozhrani pro vektorovy instrukce (dvojice s konstantim offsetem a ty maji nekonstanti vzdalenost)
+//pujcit si registry z 2. procesrou -
+	
 	coefsOfPolynFunc[0] = yvals[0];
 	coefsOfPolynFunc[1] = yvals[1];
 

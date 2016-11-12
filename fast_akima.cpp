@@ -60,10 +60,10 @@ void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFun
 	int quantity = count - fdStoreIndex; //count of elements processed by scalar code
 	int offset = fdStoreIndex; //from where starts scalar code
 
-	printf("scalar quty: %d\n", quantity);
+	// array of max 15 elements - allocate on stack
+	double differences[quantity];
+	double weights[quantity];
 
-	double* differences = (double*) malloc(sizeof (double) * quantity);
-	double* weights = (double*) malloc(sizeof (double) * quantity);
 	double* firstDerivatives = &coefsOfPolynFunc[count];
 
 	for (int i = fdStoreIndex; i < count - 1; i++) {
@@ -93,9 +93,6 @@ void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFun
 		}
 	}
 
-	free(differences);
-	free(weights);
-
 	int dimSize = count;
 	for (int i = fdStoreIndex; i < count - 2; i++) {
 		double w = xvals[i + 1] - xvals[i];
@@ -113,7 +110,7 @@ void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFun
 
 }
 
-void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m256d xv, __m256d xvNext,
+inline void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m256d xv, __m256d xvNext,
 		__m256d yv, __m256d yvNext, double* coefsOfPolynFunc) {
 
 	//@TODO diff of xNext and x is allready computed (two scopes before)
@@ -121,7 +118,6 @@ void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m2
 	__m256d w2 = _mm256_mul_pd(w, w);
 
 	__m256d yvMinusYvNext = _mm256_sub_pd(yv, yvNext);
-//	__m256d yvNextMinuxYv = _mm256_sub_pd(yvNext, yv);
 	__m256d fdPlusFdNext = _mm256_add_pd(fd, fdNext);
 
 	//@TODO dopryč
@@ -130,20 +126,18 @@ void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m2
 	//optimaize one division
 	__m256d tmpDiv = _mm256_div_pd(yvMinusYvNext, w);
 
-	__m256d coef3 = _mm256_mul_pd(MINUS_THREE_PD, tmpDiv);
-	coef3 = _mm256_sub_pd(coef3, _mm256_add_pd(fd, fd));
+	//FMA instruction: -3 * tmpDiv - 2*fd
+	__m256d coef3 = _mm256_fmsub_pd(MINUS_THREE_PD, tmpDiv, _mm256_mul_pd(TWO_PD, fd));
 	coef3 = _mm256_div_pd(_mm256_sub_pd(coef3, fdNext), w);
 	_mm256_stream_pd(&coefsOfPolynFunc[2 * count + i * SIMD_WIDTH], coef3);
 
-	//multiply has better throughput than add - eg 2*a is better than a+a
-	__m256d coef4 = _mm256_mul_pd(TWO_PD, tmpDiv);
-	coef4 = _mm256_add_pd(coef4, fdPlusFdNext);
+	__m256d coef4 = _mm256_fmadd_pd(TWO_PD, tmpDiv, fdPlusFdNext);
 	coef4 = _mm256_div_pd(coef4, w2);
 	_mm256_stream_pd(&coefsOfPolynFunc[3 * count + i * SIMD_WIDTH], coef4);
 }
 
 
-__m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
+inline __m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
 		__m256d x0, __m256d x1, __m256d w1, __m256d w2) {
 	//wP = wnn
 	//wM = w1
@@ -194,10 +188,6 @@ __m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d
 void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc) {
 
 	double* firstDerivatives = &coefsOfPolynFunc[count];
-
-	__m256d x[4];
-	__m256d y[4];
-//	__m256d d[3];
 
 	// cannot use array - array of vectors causes L1 access
 	__m256d x0, x1, x2, x3;
@@ -287,14 +277,13 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 		x1 = x2;
 		x2 = x3;
 		x3 = _mm256_loadu_pd(&xvals[(i + 1) * SIMD_WIDTH]);
-//		x3 = _mm256_castsi256_pd(_mm256_stream_load_si256((__m256i*)&xvals[(i + 1) * SIMD_WIDTH]));
 
 		y0 = y1;
 		y1 = y2;
 		y2 = y3;
 		y3 = _mm256_loadu_pd(&yvals[(i + 1) * SIMD_WIDTH]);
 
-		//stream store - hint to cpu to not use tmp (L1) buffer
+		//stream store - hint to cpu not to use tmp (L1) buffer
 		//break dependecy to place it here - after assign
 		_mm256_stream_pd(&coefsOfPolynFunc[(i+1) * SIMD_WIDTH], y3);
 
