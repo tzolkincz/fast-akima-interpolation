@@ -12,15 +12,16 @@ public:
 
 	Interpolator();
 
-	//
-	//	inline __m256d getValueWithinOneKnot(int knotBase, int size, double* coefs, double* xvals, __m256d args);
-	//
-	//	inline __m256d getValueKnownKnots(int knotBase, __m128i knotSteps, int size, double* coefs, double* xvals, __m256d args);
-	//
-	//	inline __m256d getValueAnyNextKnot(int knotStart, int size, double* coefs, double* xvals, __m256d args);
-	//
-	//	inline double getInterpolation(int size, double* xvals, double* coefs, double argument);
-
+	/**
+	 * Evaluates interpolation within one knot
+	 *
+	 * @param knotBase - knot index
+	 * @param size # of elements
+	 * @param coefs of cubic equation stored by columns
+	 * @param xvals
+	 * @param args values to be interpolated
+	 * @return
+	 */
 	inline __m256d getValueWithinOneKnot(int knotBase, int size, double* coefs, double* xvals, __m256d args) {
 		__m256d xx = _mm256_set1_pd(xvals[knotBase]);
 		args = _mm256_sub_pd(args, xx);
@@ -33,7 +34,20 @@ public:
 		return getValueVector(args, coefs0, coefs1, coefs2, coefs3);
 	}
 
-	inline __m256d getValueKnownKnots(int knotBase, __m128i knotSteps, int size, double* coefs, double* xvals, __m256d args) {
+	/**
+	 * Evaluates interpolation within known knots. Eg caller knows shift of next knots
+	 *
+	 * @param knotBase knot index
+	 * @param knotSteps steps in knots for next elements
+	 * @param size # of elements
+	 * @param coefs of cubic equation stored by columns
+	 * @param xvals
+	 * @param args values to be interpolated
+	 * @return
+	 */
+	inline __m256d getValueKnownKnots(int knotBase, __m128i knotSteps, int size, double* coefs,
+			double* xvals, __m256d args) {
+
 		__m256d xx = _mm256_i32gather_pd(&xvals[knotBase], knotSteps, 8);
 		args = _mm256_sub_pd(args, xx);
 
@@ -45,6 +59,17 @@ public:
 		return getValueVector(args, coefs0, coefs1, coefs2, coefs3);
 	}
 
+	/**
+	 *  Evaluates interpolation within known knots. Eg caller knows only minimal
+	 *  knot index, rest is computed here
+	 *
+	 * @param knotStart minimal knot issued by caller
+	 * @param size # of elements
+	 * @param coefs of cubic equation stored by columns
+	 * @param xvals
+	 * @param args values to be interpolated
+	 * @return
+	 */
 	inline __m256d getValueAnyNextKnot(int knotStart, int size, double* coefs, double* xvals, __m256d args) {
 
 		double argsArr[4];
@@ -68,6 +93,17 @@ public:
 		return getValueKnownKnots(knotStart, knotSteps, size, coefs, xvals, args);
 	}
 
+	/**
+	 * Scalar implementation for evaluationg interpolation.
+	 * Warning: inefficient linear search for knot from start
+	 * FOR TEST ONLY PURPOSES
+	 *
+	 * @param size # of elments
+	 * @param xvals
+	 * @param coefs
+	 * @param argument
+	 * @return
+	 */
 	inline double getInterpolation(int size, double* xvals, double* coefs, double argument) {
 
 		int knotIndex = -1;
@@ -84,10 +120,17 @@ public:
 		return getValue(knotIndex, size, coefs, argument - xvals[knotIndex]);
 	}
 
-
-
-private:
-
+	/**
+	 * Horner's evaluation method, vector implementation. This is more like internal mehod,
+	 * caller have to know coefficients. For easy way of interpolating @see getValueKnownKnots.
+	 *
+	 * @param args
+	 * @param coefs0
+	 * @param coefs1
+	 * @param coefs2
+	 * @param coefs3
+	 * @return
+	 */
 	inline __m256d getValueVector(__m256d args, __m256d coefs0, __m256d coefs1,
 			__m256d coefs2, __m256d coefs3) {
 		__m256d res = _mm256_fmadd_pd(args, coefs3, coefs2);
@@ -96,7 +139,7 @@ private:
 	}
 
 	/**
-	 * Horner's evaluation method
+	 * Horner's evaluation method, scalar implementation
 	 *
 	 * @param knotIndex
 	 * @param size

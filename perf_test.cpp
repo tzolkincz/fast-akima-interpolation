@@ -94,7 +94,7 @@ void simplePerfTest() {
 	for (int i = 0; i < 10; i++) {
 		auto t1 = timeNow();
 		ScalarAkima scalarImpl;
-		double* coefsOfScalar = scalarImpl.interpolate(count, x, y);
+		double* coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
 
 		std::cout << "Scalar impl took: " << durationMs(timeNow() - t1) << " ms\n";
 		printf("%f %f\n", coefsOfScalar[100], coefsOfScalar[100000]);

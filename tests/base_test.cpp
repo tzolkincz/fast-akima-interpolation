@@ -104,7 +104,7 @@ void simpleTest() {
 	Interpolator interpol;
 
 	ScalarAkima scalarImpl;
-	double* coefsOfScalar = scalarImpl.interpolate(count, x, y);
+	double* coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
 
 
 

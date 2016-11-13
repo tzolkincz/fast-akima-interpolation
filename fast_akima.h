@@ -25,15 +25,68 @@ public:
 	double* computeCoefficients(int count, double* xvals, double* yvals);
 
 private:
-	void computeDiffsAndWeights(int count, double* xvals, double* yvals, double* differences, double* weights, double* ysInternalCopy);
-	void computeFirstDerivates(int count, double* xvals, double* differences, double* weights, double* firstDerivatives);
+	/**
+	 * Private method for computing first two and last two elements of first derivates
+	 *
+	 * @param count # of elements
+	 * @param xvals
+	 * @param yvals
+	 * @param firstDerivatives  this reference can be directly first output coefficients (eg. no
+	 * need for extra array)
+	 */
 	void computeHeadAndTailOfFirstDerivates(int count, double* xvals, double* yvals, double* firstDerivatives);
-	void computePolynCoefs(int count, double* xvals, double* coefsOfPolynFunc);
+
+	/**
+	 * Compute fist derivates with constant memory footprint
+	 *
+	 * @param count # of elements
+	 * @param xvals
+	 * @param yvals
+	 * @param coefsOfPolynFunc output array for storing results
+	 */
 	void computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc);
+
+	/**
+	 * Compute third and fourth element of output coefficients
+	 *
+	 * @param count # of elements
+	 * @param i start index
+	 * @param fd current first derivates
+	 * @param fdNext next first derivates
+	 * @param xv current x values
+	 * @param xvNext next x values
+	 * @param yv current y values
+	 * @param yvNext next y values
+	 * @param coefsOfPolynFunc output array for storing results
+	 */
 	void computeThirdAndFourthCoef(int count, int i, __m256d fd, __m256d fdNext, __m256d xv, __m256d xvNext,
 			__m256d yv, __m256d yvNext, double* coefsOfPolynFunc);
-	__m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
+
+	/**
+	 * Computes and stores first derivates
+	 *
+	 * @param fdStoreIndex index within output array (fistDerivates param)
+	 * @param firstDerivatives output array
+	 * @param d0 zeroth derivates
+	 * @param d1 fists derivates
+	 * @param x0 zeroth x vals
+	 * @param x1 first x vals
+	 * @param w1 first weights
+	 * @param w2 second weights
+	 * @return Returns result - can be used in next iteration as prev. derivation
+	 */
+	__m256d storeFirstDerivates(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
 			__m256d x0, __m256d x1, __m256d w1, __m256d w2);
+
+	/**
+	 * Finish computation with scalar code. Rest that can't be computed with vector alg.
+	 *
+	 * @param count # of elements
+	 * @param fdStoreIndex start store index
+	 * @param coefsOfPolynFunc output array
+	 * @param xvals 
+	 * @param yvals
+	 */
 	void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc, double* xvals, double* yvals);
 };
 
