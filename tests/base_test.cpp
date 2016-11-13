@@ -1,9 +1,3 @@
-/*
- * File:   newsimpletest.cpp
- * Author: v
- *
- * Created on 19. října 2016, 12:51
- */
 
 #include <stdlib.h>
 #include <iostream>
@@ -24,7 +18,9 @@ void printCoefficients(int count, double* coefs);
  * Simple C++ Test Suite
  */
 
-
+/*
+ simple helper function
+ */
 void printCoefficients(int count, double* coefs) {
 	for (int i = 0; i < count; i++) {
 		printf("A: %f %f %f %f\n", coefs[i], coefs[count + i],
