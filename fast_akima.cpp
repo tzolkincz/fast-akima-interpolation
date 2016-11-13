@@ -21,40 +21,7 @@ FastAkima::FastAkima() {
 
 }
 
-//static __inline void __attribute__((__always_inline__, __nodebug__))
-//_mm256_storeu2_m128d(double const *addr_hi, double const *addr_lo, __m256d a)
-//{
-//  __m128d v128;
-//
-//  v128 = _mm256_castpd256_pd128(a);
-//  __builtin_ia32_storeupd(addr_lo, v128);
-//  v128 = _mm256_extractf128_pd(a, 1);
-//  __builtin_ia32_storeupd(addr_hi, v128);
-//}
-
-inline __m256d _mm256_rotate_left_pd(__m256d a) {
-	return _mm256_permute4x64_pd(a, 0b00111001);
-}
-
-inline __m256d _mm256_rotate_right_pd(__m256d a) {
-	return _mm256_permute4x64_pd(a, 0b10010011);
-}
-
-inline __m256d _mm256_reverse_pd(__m256d a) {
-	return _mm256_permute4x64_pd(a, 0b00011011);
-}
-
-inline __m256d _mm256_shiftl_and_load_next_pd(__m256d toShift, __m256d toLoadNext) {
-	return _mm256_blend_pd(_mm256_rotate_left_pd(toShift), _mm256_reverse_pd(toLoadNext), 0b1000);
-}
-
-inline __m256d _mm256_shiftr_and_load_next_pd(__m256d toLoadNext, __m256d toShift) {
-	return _mm256_blend_pd(_mm256_reverse_pd(toLoadNext), _mm256_rotate_right_pd(toShift), 0b1110);
-}
-
-
-
-void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc, double* xvals, double* yvals) {
+void FastAkima::computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc, double* xvals, double* yvals) {
 
 	fdStoreIndex--;
 	int quantity = count - fdStoreIndex; //count of elements processed by scalar code
@@ -71,15 +38,14 @@ void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFun
 	}
 
 	for (int i = fdStoreIndex; i < count - 1; i++) {
-		weights[i - offset] = fabs(differences[i - offset] - differences[i  - offset - 1]);
+		weights[i - offset] = fabs(differences[i - offset] - differences[i - offset - 1]);
 		coefsOfPolynFunc[i] = yvals[i];
 	}
 
 	// Prepare Hermite interpolation scheme.
-
 	for (int i = fdStoreIndex; i < count - 2; i++) {
 		double wP = weights[i - offset + 1];
-		double wM = weights[i  - offset- 1];
+		double wM = weights[i - offset - 1];
 
 		if (FP_ZERO == fpclassify(wP) && FP_ZERO == fpclassify(wM)) {
 			double xv = xvals[i];
@@ -88,7 +54,7 @@ void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFun
 			firstDerivatives[i] = (((xvP - xv) * differences[i - offset - 1])
 					+ ((xv - xvM) * differences[i - offset])) / (xvP - xvM);
 		} else {
-			firstDerivatives[i] = ((wP * differences[i  - offset- 1])
+			firstDerivatives[i] = ((wP * differences[i - offset - 1])
 					+ (wM * differences[i - offset])) / (wP + wM);
 		}
 	}
@@ -107,18 +73,14 @@ void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFun
 		coefsOfPolynFunc[2 * dimSize + i] = (3 * (yvP - yv) / w - 2 * fd - fdP) / w;
 		coefsOfPolynFunc[3 * dimSize + i] = (2 * (yv - yvP) / w + fd + fdP) / w2;
 	}
-
 }
 
-inline void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m256d xv, __m256d xvNext,
+inline void FastAkima::computeThirdAndFourthCoef(int count, int i, __m256d fd, __m256d fdNext, __m256d xv, __m256d xvNext,
 		__m256d yv, __m256d yvNext, double* coefsOfPolynFunc) {
 
 	//@TODO diff of xNext and x is allready computed (two scopes before)
 	__m256d w = _mm256_sub_pd(xvNext, xv);
 	__m256d yvMinusYvNext = _mm256_sub_pd(yv, yvNext);
-
-	//@TODO dopryč
-	int SIMD_WIDTH = 4;
 
 	//optimaize one division
 	__m256d tmpDiv = _mm256_div_pd(yvMinusYvNext, w);
@@ -136,8 +98,7 @@ inline void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNex
 	_mm256_stream_pd(&coefsOfPolynFunc[3 * count + i * SIMD_WIDTH], coef4);
 }
 
-
-inline __m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
+inline __m256d FastAkima::storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
 		__m256d x0, __m256d x1, __m256d w1, __m256d w2) {
 	//wP = wnn
 	//wM = w1
@@ -177,7 +138,7 @@ inline __m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __
 
 		//combine ok and special cases
 		__m256i combineMask = _mm256_castpd_si256(condAnd);
-		 //will it blend? watch?v=lAl28d6tbko
+		//will it blend? watch?v=lAl28d6tbko
 		fd = _mm256_blendv_pd(fd1, fd2, _mm256_castsi256_pd(_mm256_andnot_si256(combineMask, intTrue)));
 		_mm256_store_pd(&firstDerivatives[fdStoreIndex], fd); //avoid masked store
 	}
@@ -197,49 +158,26 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 	x0 = _mm256_loadu_pd(&xvals[0]);
 	y0 = _mm256_loadu_pd(&yvals[0]);
 
+	auto initStartVars = [&](__m256d* xPrev, __m256d* yPrev, __m256d* x, __m256d* y, __m256d* d, int i) {
+		*x = _mm256_loadu_pd(&xvals[i * SIMD_WIDTH]);
+			*y = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
+			__m256d xn = _mm256_shiftl_and_load_next_pd(*xPrev, *x);
+			__m256d yn = _mm256_shiftl_and_load_next_pd(*yPrev, *y);
+			__m256d dx = _mm256_sub_pd(*xPrev, xn);
+			__m256d dy = _mm256_sub_pd(*yPrev, yn);
+			*d = _mm256_div_pd(dy, dx);
+	};
 
-//	@TOOD rewrite to MACRO
-	{
-		int i = 1;
-		{
-		x1 = _mm256_loadu_pd(&xvals[i * SIMD_WIDTH]);
-		y1 = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
-		__m256d xn = _mm256_shiftl_and_load_next_pd(x0, x1);
-		__m256d yn = _mm256_shiftl_and_load_next_pd(y0, y1);
-		__m256d dx = _mm256_sub_pd(x0, xn);
-		__m256d dy = _mm256_sub_pd(y0, yn);
-		d0 = _mm256_div_pd(dy, dx);
-		}
-
-		i++;
-		{
-		x2 = _mm256_loadu_pd(&xvals[i * SIMD_WIDTH]);
-		y2 = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
-		__m256d xn = _mm256_shiftl_and_load_next_pd(x1, x2);
-		__m256d yn = _mm256_shiftl_and_load_next_pd(y1, y2);
-		__m256d dx = _mm256_sub_pd(x1, xn);
-		__m256d dy = _mm256_sub_pd(y1, yn);
-		d1 = _mm256_div_pd(dy, dx);
-		}
-
-		i++;
-		{
-		x3 = _mm256_loadu_pd(&xvals[i * SIMD_WIDTH]);
-		y3 = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
-		__m256d xn = _mm256_shiftl_and_load_next_pd(x2, x3);
-		__m256d yn = _mm256_shiftl_and_load_next_pd(y2, y3);
-		__m256d dx = _mm256_sub_pd(x2, xn);
-		__m256d dy = _mm256_sub_pd(y2, yn);
-		d2 = _mm256_div_pd(dy, dx);
-		}
-	}
+	int initIndex = 1;
+	initStartVars(&x0, &y0, &x1, &y1, &d0, initIndex++);
+	initStartVars(&x1, &y1, &x2, &y2, &d1, initIndex++);
+	initStartVars(&x2, &y2, &x3, &y3, &d2, initIndex++);
 
 	__m256d d1n = _mm256_shiftl_and_load_next_pd(d0, d1);
 	__m256d w1 = _mm256_abs_pd(_mm256_sub_pd(d0, d1n));
 
 	__m256d d2n = _mm256_shiftl_and_load_next_pd(d1, d2);
 	__m256d w2 = _mm256_abs_pd(_mm256_sub_pd(d1, d2n));
-
 
 
 	//store fist coefs
@@ -271,8 +209,6 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 
 		fdPrev = fd;
 
-
-
 		x0 = x1;
 		x1 = x2;
 		x2 = x3;
@@ -285,7 +221,7 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 
 		//stream store - hint to cpu not to use tmp (L1) buffer
 		//break dependecy to place it here - after assign
-		_mm256_stream_pd(&coefsOfPolynFunc[(i+1) * SIMD_WIDTH], y3);
+		_mm256_stream_pd(&coefsOfPolynFunc[(i + 1) * SIMD_WIDTH], y3);
 
 		d0 = d1;
 		d1 = d2;
@@ -306,45 +242,19 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 	int fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
 	storeFirstDerivats(fdStoreIndex, firstDerivatives, d0, d1, x0, x1, w1, w2);
 
-	//@TODOzbytek poresit skalarni implementaci
-
 	computeRestCoefsScalar(count, fdStoreIndex, coefsOfPolynFunc, xvals, yvals);
-
 }
 
 double* FastAkima::interpolate(int count, double* xvals, double* yvals) {
 	if (count < MINIMUM_NUMBER_POINTS) {
-		return (double*) - 1;
+		throw "Insufficient data exception.";
 	}
-
-//	double* differences = (double*) malloc(sizeof (double) * count);
-//	double* weights = (double*) malloc(sizeof (double) * count);
 
 	double* coefsOfPolynFunc = (double*) aligned_alloc(64, sizeof (double) * 4 * count);
 	double* firstDerivatives = &coefsOfPolynFunc[1 * count];
 
-	//@TODO misto pole pro prvni derivaci rovnou pouzit koeficientni pole
-	//@TODO zkusit jesete neco vyhnojit rovnou v prvni smycce - treba prvni koef.
-
 	computeHeadAndTailOfFirstDerivates(count, xvals, yvals, firstDerivatives);
-
-
-
 	computeFirstDerivatesWoTmpArr(count, xvals, yvals, coefsOfPolynFunc);
-
-
-//		computeDiffsAndWeights(count, xvals, yvals, differences, weights, &coefsOfPolynFunc[0]);
-
-	// Prepare Hermite interpolation scheme.
-
-	//	computeFirstDerivates(count, xvals, differences, weights, firstDerivatives);
-
-//	free(differences);
-//	free(weights);
-
-
-	//interpolate hermite sorted
-//	computePolynCoefs(count, xvals, coefsOfPolynFunc);
 
 	return coefsOfPolynFunc;
 }
@@ -482,14 +392,21 @@ void FastAkima::computeHeadAndTailOfFirstDerivates(int count, double* xvals, dou
 
 	__m256d res = _mm256_mul_pd(_mm256_add_pd(a, a), t0);
 	res = _mm256_add_pd(res, b);
-	_mm256_storeu2_m128d(&firstDerivatives[count - 2], &firstDerivatives[0], res);
+
+	//visualc do not have this intrinsic
+	//_mm256_storeu2_m128d(&firstDerivatives[count - 2], &firstDerivatives[0], res);
+	double tmpRes[4];
+	_mm256_storeu_pd(tmpRes, res);
+	firstDerivatives[0] = tmpRes[1];
+	firstDerivatives[1] = tmpRes[0];
+	firstDerivatives[count - 1] = tmpRes[3];
+	firstDerivatives[count - 2] = tmpRes[2];
 }
 
 inline void FastAkima::computePolynCoefs(int count, double* xvals, double* coefsOfPolynFunc) {
 
 	double* firstDerivatives = &coefsOfPolynFunc[1 * count];
 	double* yvals = &coefsOfPolynFunc[0];
-
 
 	int numberOfDiffAndWeightElements = count - 1;
 	int dimSize = count;
