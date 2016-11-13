@@ -160,12 +160,12 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 
 	auto initStartVars = [&](__m256d* xPrev, __m256d* yPrev, __m256d* x, __m256d* y, __m256d* d, int i) {
 		*x = _mm256_loadu_pd(&xvals[i * SIMD_WIDTH]);
-			*y = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
-			__m256d xn = _mm256_shiftl_and_load_next_pd(*xPrev, *x);
-			__m256d yn = _mm256_shiftl_and_load_next_pd(*yPrev, *y);
-			__m256d dx = _mm256_sub_pd(*xPrev, xn);
-			__m256d dy = _mm256_sub_pd(*yPrev, yn);
-			*d = _mm256_div_pd(dy, dx);
+		*y = _mm256_loadu_pd(&yvals[i * SIMD_WIDTH]);
+		__m256d xn = _mm256_shiftl_and_load_next_pd(*xPrev, *x);
+		__m256d yn = _mm256_shiftl_and_load_next_pd(*yPrev, *y);
+		__m256d dx = _mm256_sub_pd(*xPrev, xn);
+		__m256d dy = _mm256_sub_pd(*yPrev, yn);
+		*d = _mm256_div_pd(dy, dx);
 	};
 
 	int initIndex = 1;
@@ -245,7 +245,7 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 	computeRestCoefsScalar(count, fdStoreIndex, coefsOfPolynFunc, xvals, yvals);
 }
 
-double* FastAkima::interpolate(int count, double* xvals, double* yvals) {
+double* FastAkima::computeCoefficients(int count, double* xvals, double* yvals) {
 	if (count < MINIMUM_NUMBER_POINTS) {
 		throw "Insufficient data exception.";
 	}

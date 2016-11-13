@@ -1,16 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * File:   fast_akima.h
- * Author: v
- *
- * Created on 19. října 2016, 13:11
- */
-
 
 #include <immintrin.h>
 
@@ -35,7 +22,7 @@ public:
 	 * @param yvals y-vals of input pairs
 	 * @return
 	 */
-	double* interpolate(int count, double* xvals, double* yvals);
+	double* computeCoefficients(int count, double* xvals, double* yvals);
 
 private:
 	void computeDiffsAndWeights(int count, double* xvals, double* yvals, double* differences, double* weights, double* ysInternalCopy);
@@ -43,10 +30,10 @@ private:
 	void computeHeadAndTailOfFirstDerivates(int count, double* xvals, double* yvals, double* firstDerivatives);
 	void computePolynCoefs(int count, double* xvals, double* coefsOfPolynFunc);
 	void computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc);
-	void computeThirdAndFourthCoef(int count, int i, __m256d fd,__m256d fdNext, __m256d xv, __m256d xvNext,
-		__m256d yv, __m256d yvNext, double* coefsOfPolynFunc);
+	void computeThirdAndFourthCoef(int count, int i, __m256d fd, __m256d fdNext, __m256d xv, __m256d xvNext,
+			__m256d yv, __m256d yvNext, double* coefsOfPolynFunc);
 	__m256d storeFirstDerivats(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
-		__m256d x0, __m256d x1, __m256d w1, __m256d w2);
+			__m256d x0, __m256d x1, __m256d w1, __m256d w2);
 	void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc, double* xvals, double* yvals);
 };
 

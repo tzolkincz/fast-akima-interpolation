@@ -64,7 +64,7 @@ void simplePerfTest() {
 
 		auto t1 = timeNow();
 		FastAkima fastAkimaImpl;
-		double* coefsOfFastImpl = fastAkimaImpl.interpolate(count, x, y);
+		double* coefsOfFastImpl = fastAkimaImpl.computeCoefficients(count, x, y);
 
 		std::cout << "Fast impl took: " << durationMs(timeNow() - t1) << " ms\n";
 
