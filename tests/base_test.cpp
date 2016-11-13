@@ -55,21 +55,76 @@ double EPSILON = 0.000000001;
  */
 double getValue(int knotIndex, int size, double* coefs, double argument) {
 
-	//@TODO use FMA instructions
 	double res = coefs[size * 3 + knotIndex];
 
 	res = argument * res + coefs[size * 2 + knotIndex];
 	res = argument * res + coefs[size * 1 + knotIndex];
 	res = argument * res + coefs[size * 0 + knotIndex];
 
-	//	for (int j = 2; j >= 0; j--) {
-	//		res = argument * res + coefs[size * j  + knotIndex];
-	//	}
-
 	return res;
 }
 
-double getInterpolation(int size, double* xvals, double * coefs, double argument) {
+
+#include <immintrin.h>
+#include "../helpers.h"
+
+
+//horner
+
+inline __m256d getValueVector(__m256d args, __m256d coefs0, __m256d coefs1, __m256d coefs2, __m256d coefs3) {
+	__m256d res = _mm256_fmadd_pd(args, coefs3, coefs2);
+	res = _mm256_fmadd_pd(args, res, coefs1);
+	return _mm256_fmadd_pd(args, res, coefs0);
+}
+
+inline __m256d getValueWithinOneKnot(int knotBase, int size, double* coefs, double* xvals, __m256d args) {
+	__m256d xx = _mm256_set1_pd(xvals[knotBase]);
+	args = _mm256_sub_pd(args, xx);
+
+	__m256d coefs3 = _mm256_set1_pd(coefs[knotBase + 3 * size]);
+	__m256d coefs2 = _mm256_set1_pd(coefs[knotBase + 2 * size]);
+	__m256d coefs1 = _mm256_set1_pd(coefs[knotBase + 1 * size]);
+	__m256d coefs0 = _mm256_set1_pd(coefs[knotBase + 0 * size]);
+
+	return getValueVector(args, coefs0, coefs1, coefs2, coefs3);
+}
+
+inline __m256d getValueKnownKnots(int knotBase, __m128i knotSteps, int size, double* coefs, double* xvals, __m256d args) {
+	__m256d xx = _mm256_i32gather_pd(&xvals[knotBase], knotSteps, 8);
+	args = _mm256_sub_pd(args, xx);
+
+	__m256d coefs3 = _mm256_i32gather_pd(&coefs[knotBase + 3 * size], knotSteps, 8);
+	__m256d coefs2 = _mm256_i32gather_pd(&coefs[knotBase + 2 * size], knotSteps, 8);
+	__m256d coefs1 = _mm256_i32gather_pd(&coefs[knotBase + 1 * size], knotSteps, 8);
+	__m256d coefs0 = _mm256_i32gather_pd(&coefs[knotBase + 0 * size], knotSteps, 8);
+
+	return getValueVector(args, coefs0, coefs1, coefs2, coefs3);
+}
+
+inline __m256d getValueAnyNextKnot(int knotStart, int size, double* coefs, double* xvals, __m256d args) {
+
+	double argsArr[4];
+	_mm256_storeu_pd(argsArr, args);
+
+	int knotStepsArr[4] = {-1, -1, -1, -1};
+	//for each item in vector, find knot step
+	for (int i = 0; i < 4; i++) {
+
+		for (int j = knotStart; j < size; j++) {
+			if (xvals[j] > argsArr[i]) {
+				knotStepsArr[i] = j - 1;
+				break;
+			}
+		}
+		if (knotStepsArr[i] == -1) {
+			throw "Value out of range.";
+		}
+	}
+	__m128i knotSteps = _mm_setr_epi32(knotStepsArr[0], knotStepsArr[1], knotStepsArr[2], knotStepsArr[3]);
+	return getValueKnownKnots(knotStart, knotSteps, size, coefs, xvals, args);
+}
+
+double getInterpolation(int size, double* xvals, double* coefs, double argument) {
 
 	int knotIndex = -1;
 	for (int i = 0; i < size; i++) {
@@ -79,7 +134,9 @@ double getInterpolation(int size, double* xvals, double * coefs, double argument
 		}
 	}
 
-
+	if (knotIndex < 0) {
+		throw "Value out of range.";
+	}
 	return getValue(knotIndex, size, coefs, argument - xvals[knotIndex]);
 }
 
@@ -175,7 +232,7 @@ void simpleTest() {
 
 	std::cout << "\n \n";
 	int k = 0;
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < count - 5; i++) {
 		for (double j = 0.0; j < 1; j += 0.25) {
 			if (correctInterpol[k] - getInterpolation(count, x, coefsOfFastImpl, i + j) > EPSILON) {
 				std::cout << correctInterpol[k] << " " << correctInterpol[k] - getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
@@ -186,9 +243,67 @@ void simpleTest() {
 
 			k++;
 			//std::cout << std::setprecision(10) << getInterpolation(count, x, coefsOfFastImpl, i + j) << ", ";
-			//std::cout << i + j << "," << getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
+			//			std::cout << i + j << "," << getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
 		}
 	}
+
+	for (int i = 0; i < count - 5; i++) {
+
+		__m256d arg = _mm256_setr_pd(i, i + 0.25, i + 0.5, i + 0.75);
+		__m256d res = getValueWithinOneKnot(i, count, coefsOfFastImpl, x, arg);
+
+		int k = 0;
+		for (double j = 0.0; j < 1; j += 0.25) {
+			double in = getInterpolation(count, x, coefsOfFastImpl, i + j);
+			if (in - res[k++] > EPSILON) {
+				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+						"vector interpolation failed on " << k << " th item" << std::endl;
+			}
+			//			std::cout << std::setprecision(10) << getInterpolation(count, x, coefsOfFastImpl, i + j) << ", ";
+		}
+	}
+
+
+	//test getValueKnownKnots function
+	{
+		__m256d arg = _mm256_setr_pd(1, 2.25, 3.5, 4.75);
+		__m256d resVector = getValueKnownKnots(0, _mm_setr_epi32(1, 2, 3, 4), count, coefsOfFastImpl, x, arg);
+
+		__m256d resScalar = _mm256_setr_pd(
+				getInterpolation(count, x, coefsOfFastImpl, 1),
+				getInterpolation(count, x, coefsOfFastImpl, 2.25),
+				getInterpolation(count, x, coefsOfFastImpl, 3.5),
+				getInterpolation(count, x, coefsOfFastImpl, 4.75)
+				);
+
+		__m256d diffForCmp = _mm256_sub_pd(resScalar, resVector);
+		__m256d cmp = _mm256_cmp_pd(diffForCmp, _mm256_set1_pd(EPSILON), _CMP_GT_OQ);
+		if (!_mm256_testz_pd(cmp, cmp)) {
+			std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+					"test of function getValueKnownKnots failed" << std::endl;
+		}
+	}
+
+	//test getValueAnyNextKnot function
+	{
+		__m256d arg = _mm256_setr_pd(1, 2.25, 3.5, 4.75);
+		__m256d resVector = getValueAnyNextKnot(0, count, coefsOfFastImpl, x, arg);
+
+		__m256d resScalar = _mm256_setr_pd(
+				getInterpolation(count, x, coefsOfFastImpl, 1),
+				getInterpolation(count, x, coefsOfFastImpl, 2.25),
+				getInterpolation(count, x, coefsOfFastImpl, 3.5),
+				getInterpolation(count, x, coefsOfFastImpl, 4.75)
+				);
+
+		__m256d diffForCmp = _mm256_sub_pd(resScalar, resVector);
+		__m256d cmp = _mm256_cmp_pd(diffForCmp, _mm256_set1_pd(EPSILON), _CMP_GT_OQ);
+		if (!_mm256_testz_pd(cmp, cmp)) {
+			std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+					"test of function getValueAnyNextKnot failed" << std::endl;
+		}
+	}
+
 
 	free(x);
 	free(y);
