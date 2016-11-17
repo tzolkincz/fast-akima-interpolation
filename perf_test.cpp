@@ -27,10 +27,7 @@
 #include <immintrin.h>
 #include "helpers.h"
 
-inline __m256d getValueGathers(int knotBase, int knotVindex, int size, double * coefs, __m256d args) {
-	//__m256i vindex = _mm256_setr_epi64x(0, size, 2* size, 3 * size);
-	//__m256d coefs0 = _mm256_i64gather_pd(&coefs[knotBase], vindex, 8); //gathery nebudou potřeba, asi
-	int SIMD_WIDTH = 4;
+inline __m256d getValueGathers(int knotBase, int knotVindex, int size, AlignedCoefficients &coefs, __m256d args) {
 
 	__m256d coefs3 = _mm256_set1_pd(coefs[knotBase + 3 * size]);
 	__m256d coefs2 = _mm256_set1_pd(coefs[knotBase + 2 * size]);
@@ -48,10 +45,10 @@ void simplePerfTest() {
 	std::cout << "simple perf test 1" << std::endl;
 
 	//init values
-	int count = 10 * 1000 * 1000;
+	size_t count = 10 * 1000 * 1000;
 
-	double* x = (double*) aligned_alloc(64, sizeof (double) *count);
-	double* y = (double*) aligned_alloc(64, sizeof (double) *count);
+	std::vector<double> x(count);
+	std::vector<double> y(count);
 
 	srand(time(NULL));
 	for (int i = 0; i < count; i++) {
@@ -64,7 +61,7 @@ void simplePerfTest() {
 
 		auto t1 = timeNow();
 		FastAkima fastAkimaImpl;
-		double* coefsOfFastImpl = fastAkimaImpl.computeCoefficients(count, x, y);
+		auto coefsOfFastImpl = fastAkimaImpl.computeCoefficients(count, x, y);
 
 		std::cout << "Fast impl took: " << durationMs(timeNow() - t1) << " ms\n";
 
@@ -86,24 +83,17 @@ void simplePerfTest() {
 
 		std::cout << "interpol took: " << durationMs(timeNow() - t1) << " ms\n";
 		std::cout << "anti optimizer: " << anti_optimalizator << " \n";
-
-
-		free(coefsOfFastImpl);
 	}
 
 	for (int i = 0; i < 10; i++) {
 		auto t1 = timeNow();
 		ScalarAkima scalarImpl;
-		double* coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
+		auto coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
 
 		std::cout << "Scalar impl took: " << durationMs(timeNow() - t1) << " ms\n";
 		printf("%f %f\n", coefsOfScalar[100], coefsOfScalar[100000]);
-
-		free(coefsOfScalar);
 	}
 
-	free(x);
-	free(y);
 }
 
 /*

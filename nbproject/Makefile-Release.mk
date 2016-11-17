@@ -38,6 +38,20 @@ OBJECTFILES= \
 	${OBJECTDIR}/fast_akima.o \
 	${OBJECTDIR}/helpers.o \
 	${OBJECTDIR}/interpolator.o \
+	${OBJECTDIR}/lib/cpp/src/alglibinternal.o \
+	${OBJECTDIR}/lib/cpp/src/alglibmisc.o \
+	${OBJECTDIR}/lib/cpp/src/ap.o \
+	${OBJECTDIR}/lib/cpp/src/dataanalysis.o \
+	${OBJECTDIR}/lib/cpp/src/diffequations.o \
+	${OBJECTDIR}/lib/cpp/src/fasttransforms.o \
+	${OBJECTDIR}/lib/cpp/src/integration.o \
+	${OBJECTDIR}/lib/cpp/src/interpolation.o \
+	${OBJECTDIR}/lib/cpp/src/linalg.o \
+	${OBJECTDIR}/lib/cpp/src/optimization.o \
+	${OBJECTDIR}/lib/cpp/src/solvers.o \
+	${OBJECTDIR}/lib/cpp/src/specialfunctions.o \
+	${OBJECTDIR}/lib/cpp/src/statistics.o \
+	${OBJECTDIR}/perf_test.o \
 	${OBJECTDIR}/scalar_akima.o
 
 # Test Directory
@@ -91,6 +105,76 @@ ${OBJECTDIR}/interpolator.o: interpolator.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/interpolator.o interpolator.cpp
+
+${OBJECTDIR}/lib/cpp/src/alglibinternal.o: lib/cpp/src/alglibinternal.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/alglibinternal.o lib/cpp/src/alglibinternal.cpp
+
+${OBJECTDIR}/lib/cpp/src/alglibmisc.o: lib/cpp/src/alglibmisc.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/alglibmisc.o lib/cpp/src/alglibmisc.cpp
+
+${OBJECTDIR}/lib/cpp/src/ap.o: lib/cpp/src/ap.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/ap.o lib/cpp/src/ap.cpp
+
+${OBJECTDIR}/lib/cpp/src/dataanalysis.o: lib/cpp/src/dataanalysis.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/dataanalysis.o lib/cpp/src/dataanalysis.cpp
+
+${OBJECTDIR}/lib/cpp/src/diffequations.o: lib/cpp/src/diffequations.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/diffequations.o lib/cpp/src/diffequations.cpp
+
+${OBJECTDIR}/lib/cpp/src/fasttransforms.o: lib/cpp/src/fasttransforms.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/fasttransforms.o lib/cpp/src/fasttransforms.cpp
+
+${OBJECTDIR}/lib/cpp/src/integration.o: lib/cpp/src/integration.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/integration.o lib/cpp/src/integration.cpp
+
+${OBJECTDIR}/lib/cpp/src/interpolation.o: lib/cpp/src/interpolation.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/interpolation.o lib/cpp/src/interpolation.cpp
+
+${OBJECTDIR}/lib/cpp/src/linalg.o: lib/cpp/src/linalg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/linalg.o lib/cpp/src/linalg.cpp
+
+${OBJECTDIR}/lib/cpp/src/optimization.o: lib/cpp/src/optimization.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/optimization.o lib/cpp/src/optimization.cpp
+
+${OBJECTDIR}/lib/cpp/src/solvers.o: lib/cpp/src/solvers.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/solvers.o lib/cpp/src/solvers.cpp
+
+${OBJECTDIR}/lib/cpp/src/specialfunctions.o: lib/cpp/src/specialfunctions.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/specialfunctions.o lib/cpp/src/specialfunctions.cpp
+
+${OBJECTDIR}/lib/cpp/src/statistics.o: lib/cpp/src/statistics.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/statistics.o lib/cpp/src/statistics.cpp
+
+${OBJECTDIR}/perf_test.o: perf_test.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/perf_test.o perf_test.cpp
 
 ${OBJECTDIR}/scalar_akima.o: scalar_akima.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -152,6 +236,188 @@ ${OBJECTDIR}/interpolator_nomain.o: ${OBJECTDIR}/interpolator.o interpolator.cpp
 	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/interpolator_nomain.o interpolator.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/interpolator.o ${OBJECTDIR}/interpolator_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/alglibinternal_nomain.o: ${OBJECTDIR}/lib/cpp/src/alglibinternal.o lib/cpp/src/alglibinternal.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/alglibinternal.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/alglibinternal_nomain.o lib/cpp/src/alglibinternal.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/alglibinternal.o ${OBJECTDIR}/lib/cpp/src/alglibinternal_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/alglibmisc_nomain.o: ${OBJECTDIR}/lib/cpp/src/alglibmisc.o lib/cpp/src/alglibmisc.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/alglibmisc.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/alglibmisc_nomain.o lib/cpp/src/alglibmisc.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/alglibmisc.o ${OBJECTDIR}/lib/cpp/src/alglibmisc_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/ap_nomain.o: ${OBJECTDIR}/lib/cpp/src/ap.o lib/cpp/src/ap.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/ap.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/ap_nomain.o lib/cpp/src/ap.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/ap.o ${OBJECTDIR}/lib/cpp/src/ap_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/dataanalysis_nomain.o: ${OBJECTDIR}/lib/cpp/src/dataanalysis.o lib/cpp/src/dataanalysis.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/dataanalysis.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/dataanalysis_nomain.o lib/cpp/src/dataanalysis.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/dataanalysis.o ${OBJECTDIR}/lib/cpp/src/dataanalysis_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/diffequations_nomain.o: ${OBJECTDIR}/lib/cpp/src/diffequations.o lib/cpp/src/diffequations.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/diffequations.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/diffequations_nomain.o lib/cpp/src/diffequations.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/diffequations.o ${OBJECTDIR}/lib/cpp/src/diffequations_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/fasttransforms_nomain.o: ${OBJECTDIR}/lib/cpp/src/fasttransforms.o lib/cpp/src/fasttransforms.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/fasttransforms.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/fasttransforms_nomain.o lib/cpp/src/fasttransforms.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/fasttransforms.o ${OBJECTDIR}/lib/cpp/src/fasttransforms_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/integration_nomain.o: ${OBJECTDIR}/lib/cpp/src/integration.o lib/cpp/src/integration.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/integration.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/integration_nomain.o lib/cpp/src/integration.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/integration.o ${OBJECTDIR}/lib/cpp/src/integration_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/interpolation_nomain.o: ${OBJECTDIR}/lib/cpp/src/interpolation.o lib/cpp/src/interpolation.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/interpolation.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/interpolation_nomain.o lib/cpp/src/interpolation.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/interpolation.o ${OBJECTDIR}/lib/cpp/src/interpolation_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/linalg_nomain.o: ${OBJECTDIR}/lib/cpp/src/linalg.o lib/cpp/src/linalg.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/linalg.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/linalg_nomain.o lib/cpp/src/linalg.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/linalg.o ${OBJECTDIR}/lib/cpp/src/linalg_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/optimization_nomain.o: ${OBJECTDIR}/lib/cpp/src/optimization.o lib/cpp/src/optimization.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/optimization.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/optimization_nomain.o lib/cpp/src/optimization.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/optimization.o ${OBJECTDIR}/lib/cpp/src/optimization_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/solvers_nomain.o: ${OBJECTDIR}/lib/cpp/src/solvers.o lib/cpp/src/solvers.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/solvers.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/solvers_nomain.o lib/cpp/src/solvers.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/solvers.o ${OBJECTDIR}/lib/cpp/src/solvers_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/specialfunctions_nomain.o: ${OBJECTDIR}/lib/cpp/src/specialfunctions.o lib/cpp/src/specialfunctions.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/specialfunctions.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/specialfunctions_nomain.o lib/cpp/src/specialfunctions.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/specialfunctions.o ${OBJECTDIR}/lib/cpp/src/specialfunctions_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/cpp/src/statistics_nomain.o: ${OBJECTDIR}/lib/cpp/src/statistics.o lib/cpp/src/statistics.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/cpp/src
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/cpp/src/statistics.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/statistics_nomain.o lib/cpp/src/statistics.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/cpp/src/statistics.o ${OBJECTDIR}/lib/cpp/src/statistics_nomain.o;\
+	fi
+
+${OBJECTDIR}/perf_test_nomain.o: ${OBJECTDIR}/perf_test.o perf_test.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/perf_test.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/perf_test_nomain.o perf_test.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/perf_test.o ${OBJECTDIR}/perf_test_nomain.o;\
 	fi
 
 ${OBJECTDIR}/scalar_akima_nomain.o: ${OBJECTDIR}/scalar_akima.o scalar_akima.cpp 

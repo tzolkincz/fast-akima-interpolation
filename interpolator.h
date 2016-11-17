@@ -1,6 +1,8 @@
 
 #include <immintrin.h>
 
+#include "fast_akima.h"
+
 #ifndef INTERPOLATE_H
 #define INTERPOLATE_H
 
@@ -22,7 +24,8 @@ public:
 	 * @param args values to be interpolated
 	 * @return
 	 */
-	inline __m256d getValueWithinOneKnot(int knotBase, int size, double* coefs, double* xvals, __m256d args) {
+	inline __m256d getValueWithinOneKnot(size_t knotBase, size_t size, AlignedCoefficients coefs,
+			std::vector<double> &xvals, __m256d args) {
 		__m256d xx = _mm256_set1_pd(xvals[knotBase]);
 		args = _mm256_sub_pd(args, xx);
 
@@ -45,8 +48,8 @@ public:
 	 * @param args values to be interpolated
 	 * @return
 	 */
-	inline __m256d getValueKnownKnots(int knotBase, __m128i knotSteps, int size, double* coefs,
-			double* xvals, __m256d args) {
+	inline __m256d getValueKnownKnots(size_t knotBase, __m128i knotSteps, size_t size, AlignedCoefficients coefs,
+			std::vector<double> &xvals, __m256d args) {
 
 		__m256d xx = _mm256_i32gather_pd(&xvals[knotBase], knotSteps, 8);
 		args = _mm256_sub_pd(args, xx);
@@ -70,7 +73,8 @@ public:
 	 * @param args values to be interpolated
 	 * @return
 	 */
-	inline __m256d getValueAnyNextKnot(int knotStart, int size, double* coefs, double* xvals, __m256d args) {
+	inline __m256d getValueAnyNextKnot(size_t knotStart, size_t size, AlignedCoefficients coefs,
+			std::vector<double> &xvals, __m256d args) {
 
 		double argsArr[4];
 		_mm256_storeu_pd(argsArr, args);
@@ -104,7 +108,7 @@ public:
 	 * @param argument
 	 * @return
 	 */
-	inline double getInterpolation(int size, double* xvals, double* coefs, double argument) {
+	inline double getInterpolation(size_t size, std::vector<double> &xvals, AlignedCoefficients coefs, double argument) {
 
 		int knotIndex = -1;
 		for (int i = 0; i < size; i++) {
@@ -147,7 +151,7 @@ public:
 	 * @param argument
 	 * @return
 	 */
-	inline double getValue(int knotIndex, int size, double* coefs, double argument) {
+	inline double getValue(size_t knotIndex, size_t size, AlignedCoefficients coefs, double argument) {
 
 		double res = coefs[size * 3 + knotIndex];
 

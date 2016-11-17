@@ -6,10 +6,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <algorithm>
+#include <vector>
 
 
 #include "helpers.h"
 #include "fast_akima.h"
+#include "lib/AlignmentAllocator.h"
 
 
 const __m256d zero = _mm256_setzero_pd();
@@ -21,8 +23,8 @@ FastAkima::FastAkima() {
 
 }
 
-void FastAkima::computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc,
-		double* xvals, double* yvals) {
+void FastAkima::computeRestCoefsScalar(size_t count, size_t fdStoreIndex, AlignedCoefficients &coefsOfPolynFunc,
+		const std::vector<double> &xvals, const std::vector<double> &yvals) {
 
 	fdStoreIndex--;
 	int quantity = count - fdStoreIndex; //count of elements processed by scalar code
@@ -76,8 +78,8 @@ void FastAkima::computeRestCoefsScalar(int count, int fdStoreIndex, double* coef
 	}
 }
 
-inline void FastAkima::computeThirdAndFourthCoef(int count, int i, __m256d fd, __m256d fdNext, __m256d xv,
-		__m256d xvNext, __m256d yv, __m256d yvNext, double* coefsOfPolynFunc) {
+inline void FastAkima::computeThirdAndFourthCoef(size_t count, size_t i, __m256d fd, __m256d fdNext,
+		__m256d xv, __m256d xvNext, __m256d yv, __m256d yvNext, AlignedCoefficients &coefsOfPolynFunc) {
 
 	//@TODO diff of xNext and x is allready computed (two scopes before)
 	__m256d w = _mm256_sub_pd(xvNext, xv);
@@ -99,8 +101,8 @@ inline void FastAkima::computeThirdAndFourthCoef(int count, int i, __m256d fd, _
 	_mm256_stream_pd(&coefsOfPolynFunc[3 * count + i * SIMD_WIDTH], coef4);
 }
 
-inline __m256d FastAkima::storeFirstDerivates(int fdStoreIndex, double* firstDerivatives, __m256d d0,
-		__m256d d1, __m256d x0, __m256d x1, __m256d w1, __m256d w2) {
+inline __m256d FastAkima::storeFirstDerivates(size_t fdStoreIndex, double* firstDerivatives,
+		__m256d d0, __m256d d1, __m256d x0, __m256d x1, __m256d w1, __m256d w2) {
 
 	//creates vector [W1_2, W1_3, W2_0, W2_1]
 	__m256d wnn = _mm256_permute2f128_pd(w1, w2, 0b00100001);
@@ -145,9 +147,10 @@ inline __m256d FastAkima::storeFirstDerivates(int fdStoreIndex, double* firstDer
 	return fd;
 }
 
-void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc) {
+void FastAkima::computeWoTmpArr(size_t count, const std::vector<double> &xvals,
+		const std::vector<double> &yvals, AlignedCoefficients &coefsOfPolynFunc) {
 
-	double* firstDerivatives = &coefsOfPolynFunc[count];
+	auto firstDerivatives = &coefsOfPolynFunc[count];
 
 	// cannot use array - array of vectors causes L1 access
 	__m256d x0, x1, x2, x3;
@@ -189,10 +192,10 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 	__m256d fdPrev = _mm256_load_pd(&coefsOfPolynFunc[count + 0 * SIMD_WIDTH]);
 	__m256d fd; //normalka se shiftem
 
-	int i = 3;
+	size_t i = 3;
 	for (; i <= (count - 2) / SIMD_WIDTH - 1; i++) {
 
-		int fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
+		size_t fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
 
 		fd = storeFirstDerivates(fdStoreIndex, firstDerivatives, d0, d1, x0, x1, w1, w2);
 
@@ -238,27 +241,29 @@ void FastAkima::computeFirstDerivatesWoTmpArr(int count, double* xvals, double* 
 	}
 
 
-	int fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
+	size_t fdStoreIndex = (i - 3) * SIMD_WIDTH + 2;
 	storeFirstDerivates(fdStoreIndex, firstDerivatives, d0, d1, x0, x1, w1, w2);
 
 	computeRestCoefsScalar(count, fdStoreIndex, coefsOfPolynFunc, xvals, yvals);
 }
 
-double* FastAkima::computeCoefficients(int count, double* xvals, double* yvals) {
+AlignedCoefficients FastAkima::computeCoefficients(size_t count,
+		const std::vector<double> &xvals, const std::vector<double> &yvals) {
 	if (count < MINIMUM_NUMBER_POINTS) {
 		throw "Insufficient data exception.";
 	}
 
-	double* coefsOfPolynFunc = (double*) aligned_alloc(64, sizeof (double) * 4 * count);
-	double* firstDerivatives = &coefsOfPolynFunc[1 * count];
+	AlignedCoefficients coefsOfPolynFunc(4 * count);
+	auto firstDerivatives = &coefsOfPolynFunc[1 * count];
 
 	computeHeadAndTailOfFirstDerivates(count, xvals, yvals, firstDerivatives);
-	computeFirstDerivatesWoTmpArr(count, xvals, yvals, coefsOfPolynFunc);
+	computeWoTmpArr(count, xvals, yvals, coefsOfPolynFunc);
 
 	return coefsOfPolynFunc;
 }
 
-void FastAkima::computeHeadAndTailOfFirstDerivates(int count, double* xvals, double* yvals, double* firstDerivatives) {
+void FastAkima::computeHeadAndTailOfFirstDerivates(size_t count, const std::vector<double> &xvals,
+		const std::vector<double> &yvals, double* firstDerivatives) {
 	// differentiateThreePoint
 	__m256d x0 = _mm256_setr_pd(yvals[0], yvals[0], yvals[count - 3], yvals[count - 3]);
 	__m256d x1 = _mm256_setr_pd(yvals[1], yvals[1], yvals[count - 2], yvals[count - 2]);

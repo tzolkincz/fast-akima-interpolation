@@ -2,6 +2,8 @@
 #ifndef SCALAR_AKIMA_H
 #define SCALAR_AKIMA_H
 
+#include "fast_akima.h"
+
 class ScalarAkima {
 public:
 
@@ -17,7 +19,8 @@ public:
 	 * @param yvals y-values
 	 * @return
 	 */
-	double* computeCoefficients(int count, double* xvals, double* yvals);
+	//__attribute__((vector, nothrow)) --why not vector?
+	__attribute__((nothrow)) AlignedCoefficients computeCoefficients(size_t count, std::vector<double> &xvals, std::vector<double> &yvals);
 
 private:
 
@@ -32,11 +35,11 @@ private:
 	 * @param indexOfThirdSample
 	 * @return
 	 */
-	double differentiateThreePointScalar(double* xvals, double* yvals,
-			int indexOfDifferentiation,
-			int indexOfFirstSample,
-			int indexOfSecondsample,
-			int indexOfThirdSample);
+	double differentiateThreePointScalar(std::vector<double> &xvals, std::vector<double> &yvals,
+			size_t indexOfDifferentiation,
+			size_t indexOfFirstSample,
+			size_t indexOfSecondsample,
+			size_t indexOfThirdSample);
 
 	/**
 	 * Interpolate on basis of Hermite's algorithm
@@ -47,7 +50,8 @@ private:
 	 * @param firstDerivatives pointer to output structure with first derivates
 	 * @return
 	 */
-	double* interpolateHermiteScalar(int count, double* xvals, double* yvals, double* firstDerivatives);
+	AlignedCoefficients interpolateHermiteScalar(size_t count, std::vector<double> &xvals,
+			std::vector<double> &yvals, AlignedCoefficients &coefsOfPolynFunc);
 
 };
 

@@ -4,16 +4,17 @@
 #include <algorithm>
 
 #include "scalar_akima.h"
+#include "fast_akima.h"
 
 ScalarAkima::ScalarAkima() {
 
 }
 
-double ScalarAkima::differentiateThreePointScalar(double* xvals, double* yvals,
-		int indexOfDifferentiation, //0, 1, -2, -1
-		int indexOfFirstSample, //0, 0, -3, -3
-		int indexOfSecondsample, //1, 1, -2, -2
-		int indexOfThirdSample) { //2, 2, -1, -1
+double ScalarAkima::differentiateThreePointScalar(std::vector<double> &xvals, std::vector<double> &yvals,
+		size_t indexOfDifferentiation, //0, 1, -2, -1
+		size_t indexOfFirstSample, //0, 0, -3, -3
+		size_t indexOfSecondsample, //1, 1, -2, -2
+		size_t indexOfThirdSample) { //2, 2, -1, -1
 	double x0 = yvals[indexOfFirstSample];
 	double x1 = yvals[indexOfSecondsample];
 	double x2 = yvals[indexOfThirdSample];
@@ -25,12 +26,13 @@ double ScalarAkima::differentiateThreePointScalar(double* xvals, double* yvals,
 	double a = (x2 - x0 - (t2 / t1 * (x1 - x0))) / (t2 * t2 - t1 * t2);
 	double b = (x1 - x0 - a * t1 * t1) / t1;
 
-	return (2 * a * t) + b;
+	return (2 * a * t) +b;
 }
 
-double* ScalarAkima::interpolateHermiteScalar(int count, double* xvals, double* yvals, double* coefsOfPolynFunc) {
+AlignedCoefficients ScalarAkima::interpolateHermiteScalar(size_t count, std::vector<double> &xvals,
+		std::vector<double> &yvals, AlignedCoefficients &coefsOfPolynFunc) {
 
-	double* firstDerivatives = &coefsOfPolynFunc[count];
+	auto firstDerivatives = &coefsOfPolynFunc[count];
 	int numberOfDiffAndWeightElements = count - 1;
 
 	int dimSize = count;
@@ -53,10 +55,11 @@ double* ScalarAkima::interpolateHermiteScalar(int count, double* xvals, double* 
 	return coefsOfPolynFunc;
 }
 
-double* ScalarAkima::computeCoefficients(int count, double* xvals, double* yvals) {
+__attribute__((nothrow)) AlignedCoefficients ScalarAkima::computeCoefficients(size_t count, std::vector<double> &xvals,
+		std::vector<double> &yvals) {
 
-	double* coefsOfPolynFunc = (double*) malloc(sizeof (double) * 4 * count);
-	double* firstDerivatives = &coefsOfPolynFunc[count];
+	AlignedCoefficients coefsOfPolynFunc(4 * count);
+	auto firstDerivatives = &coefsOfPolynFunc[count];
 	//alglib mklib popř octave/matlab/wolfram gcc
 	//get levels rozhrani pro vektorovy instrukce (dvojice s konstantim offsetem a ty maji nekonstanti vzdalenost)
 
@@ -77,7 +80,7 @@ double* ScalarAkima::computeCoefficients(int count, double* xvals, double* yvals
 	double fd, fdPrev;
 
 
-	auto computeFd = [&] (int i) {
+	auto computeFd = [&] (size_t i) {
 		if (FP_ZERO == fpclassify(w3) && FP_ZERO == fpclassify(w1)) {
 			double xv = xvals[i]; // no need to optimize this,
 			double xvP = xvals[i + 1]; // expecting to be very rare case
@@ -88,7 +91,7 @@ double* ScalarAkima::computeCoefficients(int count, double* xvals, double* yvals
 		}
 	};
 
-	auto compute3th4thCoefs = [&] (int i) {
+	auto compute3th4thCoefs = [&] (size_t i) {
 		//copute 3. and 4. coeficients
 		double w = xvals[i] - xvals[i - 1];
 		double w_2 = w * w;
@@ -103,7 +106,7 @@ double* ScalarAkima::computeCoefficients(int count, double* xvals, double* yvals
 	};
 
 
-	for (int i = 2; i < count - 2 - 1; i++) {
+	for (size_t i = 2; i < count - 2 - 1; i++) {
 		coefsOfPolynFunc[i] = yvals[i];
 
 		fd = computeFd(i);
@@ -125,7 +128,7 @@ double* ScalarAkima::computeCoefficients(int count, double* xvals, double* yvals
 		w3 = fabs(d3 - d4);
 	}
 
-	int i = count - 3;
+	size_t i = count - 3;
 	//last iteration
 	coefsOfPolynFunc[i] = yvals[i];
 	fd = computeFd(i);

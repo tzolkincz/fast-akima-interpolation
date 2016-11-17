@@ -12,6 +12,44 @@
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <logicalFolder name="lib" displayName="lib" projectFiles="true">
+        <logicalFolder name="cpp" displayName="cpp" projectFiles="true">
+          <logicalFolder name="src" displayName="src" projectFiles="true">
+            <itemPath>lib/cpp/src/alglibinternal.cpp</itemPath>
+            <itemPath>lib/cpp/src/alglibinternal.h</itemPath>
+            <itemPath>lib/cpp/src/alglibmisc.cpp</itemPath>
+            <itemPath>lib/cpp/src/alglibmisc.h</itemPath>
+            <itemPath>lib/cpp/src/ap.cpp</itemPath>
+            <itemPath>lib/cpp/src/ap.h</itemPath>
+            <itemPath>lib/cpp/src/dataanalysis.cpp</itemPath>
+            <itemPath>lib/cpp/src/dataanalysis.h</itemPath>
+            <itemPath>lib/cpp/src/diffequations.cpp</itemPath>
+            <itemPath>lib/cpp/src/diffequations.h</itemPath>
+            <itemPath>lib/cpp/src/fasttransforms.cpp</itemPath>
+            <itemPath>lib/cpp/src/fasttransforms.h</itemPath>
+            <itemPath>lib/cpp/src/integration.cpp</itemPath>
+            <itemPath>lib/cpp/src/integration.h</itemPath>
+            <itemPath>lib/cpp/src/interpolation.cpp</itemPath>
+            <itemPath>lib/cpp/src/interpolation.h</itemPath>
+            <itemPath>lib/cpp/src/linalg.cpp</itemPath>
+            <itemPath>lib/cpp/src/linalg.h</itemPath>
+            <itemPath>lib/cpp/src/optimization.cpp</itemPath>
+            <itemPath>lib/cpp/src/optimization.h</itemPath>
+            <itemPath>lib/cpp/src/solvers.cpp</itemPath>
+            <itemPath>lib/cpp/src/solvers.h</itemPath>
+            <itemPath>lib/cpp/src/specialfunctions.cpp</itemPath>
+            <itemPath>lib/cpp/src/specialfunctions.h</itemPath>
+            <itemPath>lib/cpp/src/statistics.cpp</itemPath>
+            <itemPath>lib/cpp/src/statistics.h</itemPath>
+            <itemPath>lib/cpp/src/stdafx.h</itemPath>
+          </logicalFolder>
+          <itemPath>lib/cpp/gpl2.txt</itemPath>
+          <itemPath>lib/cpp/gpl3.txt</itemPath>
+          <itemPath>lib/cpp/manual.cpp.html</itemPath>
+        </logicalFolder>
+        <itemPath>lib/AlignmentAllocator.h</itemPath>
+        <itemPath>lib/alglib-3.10.0.cpp.gpl.tgz</itemPath>
+      </logicalFolder>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -19,6 +57,7 @@
       <itemPath>fast_akima.cpp</itemPath>
       <itemPath>helpers.cpp</itemPath>
       <itemPath>interpolator.cpp</itemPath>
+      <itemPath>perf_test.cpp</itemPath>
       <itemPath>scalar_akima.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -39,6 +78,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>lib</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="3">
@@ -80,6 +122,72 @@
       <item path="interpolator.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="interpolator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/AlignmentAllocator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/alglib-3.10.0.cpp.gpl.tgz" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/gpl2.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/gpl3.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/manual.cpp.html" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibinternal.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibinternal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibmisc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibmisc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/ap.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/ap.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/dataanalysis.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/dataanalysis.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/diffequations.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/diffequations.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/fasttransforms.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/fasttransforms.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/integration.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/integration.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/interpolation.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/interpolation.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/linalg.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/linalg.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/optimization.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/optimization.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/solvers.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/solvers.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/specialfunctions.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/specialfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/statistics.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/statistics.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="perf_test.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="scalar_akima.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -136,6 +244,72 @@
       <item path="interpolator.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="interpolator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/AlignmentAllocator.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/alglib-3.10.0.cpp.gpl.tgz" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/gpl2.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/gpl3.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/manual.cpp.html" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibinternal.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibinternal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibmisc.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/alglibmisc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/ap.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/ap.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/dataanalysis.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/dataanalysis.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/diffequations.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/diffequations.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/fasttransforms.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/fasttransforms.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/integration.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/integration.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/interpolation.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/interpolation.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/linalg.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/linalg.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/optimization.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/optimization.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/solvers.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/solvers.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/specialfunctions.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/specialfunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/statistics.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/statistics.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/cpp/src/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="perf_test.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="scalar_akima.cpp" ex="false" tool="1" flavor2="0">
       </item>

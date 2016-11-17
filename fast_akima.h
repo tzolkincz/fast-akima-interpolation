@@ -1,8 +1,13 @@
 
+#include <vector>
 #include <immintrin.h>
+#include "lib/AlignmentAllocator.h"
 
 #ifndef FAST_AKIMA_H
 #define FAST_AKIMA_H
+
+typedef AlignmentAllocator<double, AVX2Alignment> AA;
+typedef std::vector<double, AA> AlignedCoefficients;
 
 class FastAkima {
 public:
@@ -22,7 +27,9 @@ public:
 	 * @param yvals y-vals of input pairs
 	 * @return
 	 */
-	double* computeCoefficients(int count, double* xvals, double* yvals);
+	//const std::vector<double> &computeCoefficients(int count, const std::vector<double> &xvals, const std::vector<double> &yvals);
+	AlignedCoefficients computeCoefficients(size_t count,
+			const std::vector<double> &xvals, const std::vector<double> &yvals);
 
 private:
 	/**
@@ -34,7 +41,8 @@ private:
 	 * @param firstDerivatives  this reference can be directly first output coefficients (eg. no
 	 * need for extra array)
 	 */
-	void computeHeadAndTailOfFirstDerivates(int count, double* xvals, double* yvals, double* firstDerivatives);
+	void computeHeadAndTailOfFirstDerivates(size_t count, const std::vector<double> &xvals,
+			const std::vector<double> &yvals, double* firstDerivatives);
 
 	/**
 	 * Compute fist derivates with constant memory footprint
@@ -44,7 +52,8 @@ private:
 	 * @param yvals
 	 * @param coefsOfPolynFunc output array for storing results
 	 */
-	void computeFirstDerivatesWoTmpArr(int count, double* xvals, double* yvals, double* coefsOfPolynFunc);
+	void computeWoTmpArr(size_t count, const std::vector<double> &xvals,
+			const std::vector<double> &yvals, AlignedCoefficients &coefsOfPolynFunc);
 
 	/**
 	 * Compute third and fourth element of output coefficients
@@ -59,8 +68,8 @@ private:
 	 * @param yvNext next y values
 	 * @param coefsOfPolynFunc output array for storing results
 	 */
-	void computeThirdAndFourthCoef(int count, int i, __m256d fd, __m256d fdNext, __m256d xv, __m256d xvNext,
-			__m256d yv, __m256d yvNext, double* coefsOfPolynFunc);
+	void computeThirdAndFourthCoef(size_t count, size_t i, __m256d fd, __m256d fdNext, __m256d xv, __m256d xvNext,
+			__m256d yv, __m256d yvNext, AlignedCoefficients &coefsOfPolynFunc);
 
 	/**
 	 * Computes and stores first derivates
@@ -75,8 +84,8 @@ private:
 	 * @param w2 second weights
 	 * @return Returns result - can be used in next iteration as prev. derivation
 	 */
-	__m256d storeFirstDerivates(int fdStoreIndex, double* firstDerivatives, __m256d d0, __m256d d1,
-			__m256d x0, __m256d x1, __m256d w1, __m256d w2);
+	__m256d storeFirstDerivates(size_t fdStoreIndex, double* firstDerivatives,
+			__m256d d0, __m256d d1, __m256d x0, __m256d x1, __m256d w1, __m256d w2);
 
 	/**
 	 * Finish computation with scalar code. Rest that can't be computed with vector alg.
@@ -84,10 +93,11 @@ private:
 	 * @param count # of elements
 	 * @param fdStoreIndex start store index
 	 * @param coefsOfPolynFunc output array
-	 * @param xvals 
+	 * @param xvals
 	 * @param yvals
 	 */
-	void computeRestCoefsScalar(int count, int fdStoreIndex, double* coefsOfPolynFunc, double* xvals, double* yvals);
+	void computeRestCoefsScalar(size_t count, size_t fdStoreIndex, AlignedCoefficients &coefsOfPolynFunc,
+			const std::vector<double> &xvals, const std::vector<double> &yvals);
 };
 
 

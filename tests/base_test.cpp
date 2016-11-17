@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <vector>
 
 #include "../fast_akima.h"
 #include "../scalar_akima.h"
@@ -12,7 +13,7 @@
 #define timeNow() std::chrono::high_resolution_clock::now()
 #define durationMs(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
 
-void printCoefficients(int count, double* coefs);
+void printCoefficients(size_t count, AlignedCoefficients coefs);
 
 /*
  * Simple C++ Test Suite
@@ -21,7 +22,7 @@ void printCoefficients(int count, double* coefs);
 /*
  simple helper function
  */
-void printCoefficients(int count, double* coefs) {
+void printCoefficients(size_t count, AlignedCoefficients coefs) {
 	for (int i = 0; i < count; i++) {
 		printf("A: %f %f %f %f\n", coefs[i], coefs[count + i],
 				coefs[2 * count + i], coefs[3 * count + i]);
@@ -47,7 +48,7 @@ void simpleTest() {
 	std::cout << "newsimpletest test 1" << std::endl;
 
 	//init values
-	const int count = 24;
+	const size_t count = 24;
 
 
 	//precomputed, verified values
@@ -59,8 +60,8 @@ void simpleTest() {
 		2.9484375, 2.9875, 3.0328125, 3, 2.7640625, 2.3875, 2.0671875, 2, 2.3125, 2.875, 3.5, 4, 4.3671875,
 		4.6875, 4.9140625, 5, 4.734375, 4.125, 3.453125, 3, 2.75, 2.5, 2.25, 598, 610.3125, 622.75, 635.3125};
 
-	double* x = (double*) malloc(sizeof (double) *count);
-	double* y = (double*) malloc(sizeof (double) *count);
+	std::vector<double> x(count);
+	std::vector<double> y(count);
 
 
 	for (int i = 0; i < count; i++) {
@@ -98,20 +99,20 @@ void simpleTest() {
 	y[i++] = 3.0;
 
 	FastAkima fastAkimaImpl;
-	double* coefsOfFastImpl = fastAkimaImpl.computeCoefficients(count, x, y);
+	auto coefsOfFastImpl = fastAkimaImpl.computeCoefficients(count, x, y);
 
 
 	Interpolator interpol;
 
 	ScalarAkima scalarImpl;
-	double* coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
+	auto coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
 
 
 
 	//check diffs:
 	bool equals = true;
 
-	for (int i = 0; i < count * 4; i++) {
+	for (size_t i = 0; i < count * 4; i++) {
 		if (coefsOfFastImpl[i] - coefsOfScalar[i] > EPSILON && i % count != count - 1) {
 			printf("ERR! fast: %f scalar: %f diff: %f %d \n",
 					coefsOfFastImpl[i], coefsOfScalar[i], coefsOfFastImpl[i] - coefsOfScalar[i], i);
@@ -133,7 +134,7 @@ void simpleTest() {
 
 	std::cout << "\n \n";
 	int k = 0;
-	for (int i = 0; i < count - 5; i++) {
+	for (size_t i = 0; i < count - 5; i++) {
 		for (double j = 0.0; j < 1; j += 0.25) {
 			if (correctInterpol[k] - interpol.getInterpolation(count, x, coefsOfFastImpl, i + j) > EPSILON) {
 				std::cout << correctInterpol[k] << " " << correctInterpol[k]
@@ -149,7 +150,7 @@ void simpleTest() {
 		}
 	}
 
-	for (int i = 0; i < count - 5; i++) {
+	for (size_t i = 0; i < count - 5; i++) {
 
 		__m256d arg = _mm256_setr_pd(i, i + 0.25, i + 0.5, i + 0.75);
 		__m256d res = interpol.getValueWithinOneKnot(i, count, coefsOfFastImpl, x, arg);
@@ -208,10 +209,6 @@ void simpleTest() {
 	}
 
 
-	free(x);
-	free(y);
-	free(coefsOfFastImpl);
-	free(coefsOfScalar);
 }
 
 int main(int argc, char** argv) {
