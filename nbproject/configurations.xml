@@ -47,6 +47,26 @@
           <itemPath>lib/cpp/gpl3.txt</itemPath>
           <itemPath>lib/cpp/manual.cpp.html</itemPath>
         </logicalFolder>
+        <logicalFolder name="glucose" displayName="glucose" projectFiles="true">
+          <logicalFolder name="iface" displayName="iface" projectFiles="true">
+            <itemPath>lib/glucose/iface/ApproxIface.cpp</itemPath>
+            <itemPath>lib/glucose/iface/ApproxIface.h</itemPath>
+            <itemPath>lib/glucose/iface/LogicalClockIface.h</itemPath>
+          </logicalFolder>
+          <logicalFolder name="rtl" displayName="rtl" projectFiles="true">
+            <itemPath>lib/glucose/rtl/LogicalClockImpl.cpp</itemPath>
+            <itemPath>lib/glucose/rtl/LogicalClockImpl.h</itemPath>
+            <itemPath>/home/v/NetBeansProjects/FastAkimaInterpol/lib/glucose/rtl/cfixes.h</itemPath>
+            <itemPath>lib/glucose/rtl/referencedImpl.cpp</itemPath>
+            <itemPath>lib/glucose/rtl/referencedImpl.h</itemPath>
+          </logicalFolder>
+          <itemPath>lib/glucose/CommonApprox.cpp</itemPath>
+          <itemPath>lib/glucose/CommonApprox.h</itemPath>
+          <itemPath>lib/glucose/GlucoseLevels.cpp</itemPath>
+          <itemPath>lib/glucose/GlucoseLevels.h</itemPath>
+          <itemPath>lib/glucose/rtl/hresult.h</itemPath>
+          <itemPath>lib/glucose/iface/referencedIface.h</itemPath>
+        </logicalFolder>
         <itemPath>lib/AlignmentAllocator.h</itemPath>
         <itemPath>lib/alglib-3.10.0.cpp.gpl.tgz</itemPath>
       </logicalFolder>
@@ -54,6 +74,10 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="glucose" displayName="glucose" projectFiles="true">
+        <itemPath>glucose/glucose_impl.cpp</itemPath>
+        <itemPath>glucose/glucose_impl.h</itemPath>
+      </logicalFolder>
       <itemPath>fast_akima.cpp</itemPath>
       <itemPath>helpers.cpp</itemPath>
       <itemPath>interpolator.cpp</itemPath>
@@ -80,6 +104,8 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>lib</Elem>
+    <Elem>../../school/ppr/cukr</Elem>
+    <Elem>glucose</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -91,11 +117,16 @@
       </toolsSet>
       <compileType>
         <ccTool>
-          <commandLine>-march=native -O3</commandLine>
+          <commandLine>-march=native -O3 -ltbb</commandLine>
         </ccTool>
         <archiverTool>
         </archiverTool>
       </compileType>
+      <item path="/home/v/NetBeansProjects/FastAkimaInterpol/lib/glucose/rtl/cfixes.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <folder path="TestFiles/f1">
         <cTool>
           <incDir>
@@ -114,6 +145,10 @@
       <item path="fast_akima.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="fast_akima.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="glucose/glucose_impl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="glucose/glucose_impl.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="helpers.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -186,6 +221,41 @@
       <item path="lib/cpp/src/statistics.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lib/cpp/src/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/CommonApprox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/CommonApprox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/GlucoseLevels.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/GlucoseLevels.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/ApproxIface.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/ApproxIface.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/LogicalClockIface.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/referencedIface.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/LogicalClockImpl.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/LogicalClockImpl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/hresult.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/referencedImpl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/referencedImpl.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="perf_test.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -218,6 +288,11 @@
         <archiverTool>
         </archiverTool>
       </compileType>
+      <item path="/home/v/NetBeansProjects/FastAkimaInterpol/lib/glucose/rtl/cfixes.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <folder path="TestFiles/f1">
         <cTool>
           <incDir>
@@ -236,6 +311,10 @@
       <item path="fast_akima.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="fast_akima.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="glucose/glucose_impl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="glucose/glucose_impl.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="helpers.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -308,6 +387,41 @@
       <item path="lib/cpp/src/statistics.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lib/cpp/src/stdafx.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/CommonApprox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/CommonApprox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/GlucoseLevels.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/GlucoseLevels.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/ApproxIface.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/ApproxIface.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/LogicalClockIface.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="lib/glucose/iface/referencedIface.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/LogicalClockImpl.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/LogicalClockImpl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/hresult.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/referencedImpl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/glucose/rtl/referencedImpl.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="perf_test.cpp" ex="false" tool="1" flavor2="0">
       </item>

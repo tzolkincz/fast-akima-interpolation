@@ -11,6 +11,8 @@
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>lib</sourceRootElem>
+                <sourceRootElem>../../school/ppr/cukr</sourceRootElem>
+                <sourceRootElem>glucose</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/fast_akima.o \
+	${OBJECTDIR}/glucose/glucose_impl.o \
 	${OBJECTDIR}/helpers.o \
 	${OBJECTDIR}/interpolator.o \
 	${OBJECTDIR}/lib/cpp/src/alglibinternal.o \
@@ -51,6 +52,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/lib/cpp/src/solvers.o \
 	${OBJECTDIR}/lib/cpp/src/specialfunctions.o \
 	${OBJECTDIR}/lib/cpp/src/statistics.o \
+	${OBJECTDIR}/lib/glucose/CommonApprox.o \
+	${OBJECTDIR}/lib/glucose/GlucoseLevels.o \
+	${OBJECTDIR}/lib/glucose/iface/ApproxIface.o \
+	${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl.o \
+	${OBJECTDIR}/lib/glucose/rtl/referencedImpl.o \
 	${OBJECTDIR}/perf_test.o \
 	${OBJECTDIR}/scalar_akima.o
 
@@ -95,6 +101,11 @@ ${OBJECTDIR}/fast_akima.o: fast_akima.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fast_akima.o fast_akima.cpp
+
+${OBJECTDIR}/glucose/glucose_impl.o: glucose/glucose_impl.cpp 
+	${MKDIR} -p ${OBJECTDIR}/glucose
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/glucose/glucose_impl.o glucose/glucose_impl.cpp
 
 ${OBJECTDIR}/helpers.o: helpers.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -171,6 +182,31 @@ ${OBJECTDIR}/lib/cpp/src/statistics.o: lib/cpp/src/statistics.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/statistics.o lib/cpp/src/statistics.cpp
 
+${OBJECTDIR}/lib/glucose/CommonApprox.o: lib/glucose/CommonApprox.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/CommonApprox.o lib/glucose/CommonApprox.cpp
+
+${OBJECTDIR}/lib/glucose/GlucoseLevels.o: lib/glucose/GlucoseLevels.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/GlucoseLevels.o lib/glucose/GlucoseLevels.cpp
+
+${OBJECTDIR}/lib/glucose/iface/ApproxIface.o: lib/glucose/iface/ApproxIface.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose/iface
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/iface/ApproxIface.o lib/glucose/iface/ApproxIface.cpp
+
+${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl.o: lib/glucose/rtl/LogicalClockImpl.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose/rtl
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl.o lib/glucose/rtl/LogicalClockImpl.cpp
+
+${OBJECTDIR}/lib/glucose/rtl/referencedImpl.o: lib/glucose/rtl/referencedImpl.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose/rtl
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/rtl/referencedImpl.o lib/glucose/rtl/referencedImpl.cpp
+
 ${OBJECTDIR}/perf_test.o: perf_test.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -210,6 +246,19 @@ ${OBJECTDIR}/fast_akima_nomain.o: ${OBJECTDIR}/fast_akima.o fast_akima.cpp
 	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fast_akima_nomain.o fast_akima.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/fast_akima.o ${OBJECTDIR}/fast_akima_nomain.o;\
+	fi
+
+${OBJECTDIR}/glucose/glucose_impl_nomain.o: ${OBJECTDIR}/glucose/glucose_impl.o glucose/glucose_impl.cpp 
+	${MKDIR} -p ${OBJECTDIR}/glucose
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/glucose/glucose_impl.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/glucose/glucose_impl_nomain.o glucose/glucose_impl.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/glucose/glucose_impl.o ${OBJECTDIR}/glucose/glucose_impl_nomain.o;\
 	fi
 
 ${OBJECTDIR}/helpers_nomain.o: ${OBJECTDIR}/helpers.o helpers.cpp 
@@ -405,6 +454,71 @@ ${OBJECTDIR}/lib/cpp/src/statistics_nomain.o: ${OBJECTDIR}/lib/cpp/src/statistic
 	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/cpp/src/statistics_nomain.o lib/cpp/src/statistics.cpp;\
 	else  \
 	    ${CP} ${OBJECTDIR}/lib/cpp/src/statistics.o ${OBJECTDIR}/lib/cpp/src/statistics_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/glucose/CommonApprox_nomain.o: ${OBJECTDIR}/lib/glucose/CommonApprox.o lib/glucose/CommonApprox.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/glucose/CommonApprox.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/CommonApprox_nomain.o lib/glucose/CommonApprox.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/glucose/CommonApprox.o ${OBJECTDIR}/lib/glucose/CommonApprox_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/glucose/GlucoseLevels_nomain.o: ${OBJECTDIR}/lib/glucose/GlucoseLevels.o lib/glucose/GlucoseLevels.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/glucose/GlucoseLevels.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/GlucoseLevels_nomain.o lib/glucose/GlucoseLevels.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/glucose/GlucoseLevels.o ${OBJECTDIR}/lib/glucose/GlucoseLevels_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/glucose/iface/ApproxIface_nomain.o: ${OBJECTDIR}/lib/glucose/iface/ApproxIface.o lib/glucose/iface/ApproxIface.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose/iface
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/glucose/iface/ApproxIface.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/iface/ApproxIface_nomain.o lib/glucose/iface/ApproxIface.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/glucose/iface/ApproxIface.o ${OBJECTDIR}/lib/glucose/iface/ApproxIface_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl_nomain.o: ${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl.o lib/glucose/rtl/LogicalClockImpl.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose/rtl
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl_nomain.o lib/glucose/rtl/LogicalClockImpl.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl.o ${OBJECTDIR}/lib/glucose/rtl/LogicalClockImpl_nomain.o;\
+	fi
+
+${OBJECTDIR}/lib/glucose/rtl/referencedImpl_nomain.o: ${OBJECTDIR}/lib/glucose/rtl/referencedImpl.o lib/glucose/rtl/referencedImpl.cpp 
+	${MKDIR} -p ${OBJECTDIR}/lib/glucose/rtl
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/lib/glucose/rtl/referencedImpl.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} "$@.d";\
+	    $(COMPILE.cc) -O2 -Dmain=__nomain -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/glucose/rtl/referencedImpl_nomain.o lib/glucose/rtl/referencedImpl.cpp;\
+	else  \
+	    ${CP} ${OBJECTDIR}/lib/glucose/rtl/referencedImpl.o ${OBJECTDIR}/lib/glucose/rtl/referencedImpl_nomain.o;\
 	fi
 
 ${OBJECTDIR}/perf_test_nomain.o: ${OBJECTDIR}/perf_test.o perf_test.cpp 
