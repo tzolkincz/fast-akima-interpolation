@@ -63,7 +63,7 @@ void FastAkima::computeRestCoefsScalar(size_t count, size_t fdStoreIndex, Aligne
 	}
 
 	int dimSize = count;
-	for (int i = fdStoreIndex; i < count - 2; i++) {
+	for (int i = fdStoreIndex; i < count - 1; i++) {
 		double w = xvals[i + 1] - xvals[i];
 		double w2 = w * w;
 

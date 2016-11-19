@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iomanip>
 #include <vector>
+#include <math.h>
 
 #include "../fast_akima.h"
 #include "../scalar_akima.h"
@@ -105,8 +106,6 @@ void simpleTest() {
 	auto coefsOfFastImpl = fastAkimaImpl.computeCoefficients(count, x, y);
 
 
-	Interpolator interpol;
-
 	ScalarAkima scalarImpl;
 	auto coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
 
@@ -116,7 +115,7 @@ void simpleTest() {
 	bool equals = true;
 
 	for (size_t i = 0; i < count * 4; i++) {
-		if (coefsOfFastImpl[i] - coefsOfScalar[i] > EPSILON && i % count != count - 1) {
+		if (fabs(coefsOfFastImpl[i] - coefsOfScalar[i]) > EPSILON && i % count != count - 1) {
 			printf("ERR! fast: %f scalar: %f diff: %f %d \n",
 					coefsOfFastImpl[i], coefsOfScalar[i], coefsOfFastImpl[i] - coefsOfScalar[i], i);
 			equals = false;
@@ -139,7 +138,7 @@ void simpleTest() {
 	int k = 0;
 	for (size_t i = 0; i < count - 5; i++) {
 		for (double j = 0.0; j < 1; j += 0.25) {
-			if (correctInterpol[k] - Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j) > EPSILON) {
+			if (fabs(correctInterpol[k] - Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j)) > EPSILON) {
 				std::cout << correctInterpol[k] << " " << correctInterpol[k]
 						- Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
 				std::cout << i + j << "," << Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
@@ -159,7 +158,7 @@ void simpleTest() {
 		int k = 0;
 		for (double j = 0.0; j < 1; j += 0.25) {
 			double in = Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j);
-			if (in - res[k++] > EPSILON) {
+			if (fabs(in - res[k++]) > EPSILON) {
 				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
 						"vector interpolation failed on " << k << " th item" << std::endl;
 			}
@@ -214,45 +213,7 @@ void simpleTest() {
 
 void glucoseTest() {
 
-	size_t cnt = 10;
-
-	//	CGlucoseLevels *gl = new CGlucoseLevels();
-	//	gl->SetLevelsCount(cnt);
-
-
-	std::vector<TGlucoseLevel> tl(cnt);
-	for (size_t i = 0; i < cnt; i++) {
-		TGlucoseLevel l;
-		l.datetime = 0.1 * i;
-		l.level = rand() * 0.0001;
-		tl[i] = l;
-	}
-
-
-	//	gl->SetLevels(tl);
-
-
-	//	GlucoseImplementation *gi = new GlucoseImplementation(tl);
-	//
-	//
-	//	double* levels = (double*)malloc(sizeof(double) * 2);
-	//	gi->GetLevels(0.3, 0.2, 2, levels, 0, 0);
-	//
-	//	printf("with glucose interface\n");
-	//	for (int i = 0; i < 2; i++) {
-	//		printf("%f\n", levels[i]);
-	//	}
-	//
-	//
-	//	free(levels);
-
-}
-
-void glucoseTest3() {
-
 	size_t cnt = 100;
-
-
 
 	printf("vals:\n");
 	std::vector<TGlucoseLevel> tl(cnt);
@@ -281,19 +242,18 @@ void glucoseTest3() {
 		GlucoseWoInterface *m = new GlucoseWoInterface(gb);
 
 
-
-
-
-		size_t desired_levels_count = 4;
+		size_t desired_levels_count = 10;
 		size_t filled;
 		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
 		m->GetLevels(0.12, 1, desired_levels_count, levels, &filled, 0, times, coefficients, cnt);
 
-		printf("with glucose interface %d\n", filled);
 		for (int i = 0; i < desired_levels_count; i++) {
-			printf("%f  %f\n", levels[i], Interpolator::getInterpolation(cnt, times, coefficients, i*1 + 0.12));
+			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, i*1 + 0.12) - levels[i])
+					> EPSILON) {
+				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+					"test glucose interface get levels" << std::endl;
+			}
 		}
-
 
 		free(levels);
 
@@ -312,7 +272,7 @@ int main(int argc, char** argv) {
 	std::cout << "%TEST_FINISHED% time=0 test1 (newsimpletest)" << std::endl;
 
 	std::cout << "%TEST_STARTED% test2 (newsimpletest)\n" << std::endl;
-	glucoseTest3();
+	glucoseTest();
 	std::cout << "%TEST_FINISHED% time=0 test2 (newsimpletest)" << std::endl;
 
 	std::cout << "%SUITE_FINISHED% time=0" << std::endl;

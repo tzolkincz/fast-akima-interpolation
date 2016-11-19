@@ -156,7 +156,7 @@ void glucoseTest4() {
 
 
 
-		size_t desired_levels_count = 4;
+		size_t desired_levels_count = 10;
 		size_t filled;
 		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
 
