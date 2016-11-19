@@ -2,6 +2,7 @@
 #include <immintrin.h>
 
 #include "fast_akima.h"
+#include "helpers.h"
 
 #ifndef INTERPOLATE_H
 #define INTERPOLATE_H
@@ -24,7 +25,7 @@ public:
 	 * @param args values to be interpolated
 	 * @return
 	 */
-	inline __m256d getValueWithinOneKnot(size_t knotBase, size_t size, AlignedCoefficients coefs,
+	inline static __m256d getValueWithinOneKnot(size_t knotBase, size_t size, AlignedCoefficients &coefs,
 			std::vector<double> &xvals, __m256d args) {
 		__m256d xx = _mm256_set1_pd(xvals[knotBase]);
 		args = _mm256_sub_pd(args, xx);
@@ -48,7 +49,7 @@ public:
 	 * @param args values to be interpolated
 	 * @return
 	 */
-	inline __m256d getValueKnownKnots(size_t knotBase, __m128i knotSteps, size_t size, AlignedCoefficients coefs,
+	inline static __m256d getValueKnownKnots(size_t knotBase, __m128i knotSteps, size_t size, AlignedCoefficients &coefs,
 			std::vector<double> &xvals, __m256d args) {
 
 		__m256d xx = _mm256_i32gather_pd(&xvals[knotBase], knotSteps, 8);
@@ -73,7 +74,7 @@ public:
 	 * @param args values to be interpolated
 	 * @return
 	 */
-	inline __m256d getValueAnyNextKnot(size_t knotStart, size_t size, AlignedCoefficients coefs,
+	inline static __m256d getValueAnyNextKnot(size_t knotStart, size_t size, AlignedCoefficients &coefs,
 			std::vector<double> &xvals, __m256d args) {
 
 		double argsArr[4];
@@ -85,12 +86,13 @@ public:
 
 			for (int j = knotStart; j < size; j++) {
 				if (xvals[j] > argsArr[i]) {
-					knotStepsArr[i] = j - 1;
+					//					knotStepsArr[i] = j - 1;
+					knotStepsArr[i] = j - knotStart - 1;
 					break;
 				}
 			}
 			if (knotStepsArr[i] == -1) {
-				throw "Value out of range.";
+				throw "Value out of range.\n";
 			}
 		}
 		__m128i knotSteps = _mm_setr_epi32(knotStepsArr[0], knotStepsArr[1], knotStepsArr[2], knotStepsArr[3]);
@@ -108,7 +110,8 @@ public:
 	 * @param argument
 	 * @return
 	 */
-	inline double getInterpolation(size_t size, std::vector<double> &xvals, AlignedCoefficients coefs, double argument) {
+	inline static double getInterpolation(size_t size, std::vector<double> &xvals,
+			AlignedCoefficients &coefs, double argument) {
 
 		int knotIndex = -1;
 		for (int i = 0; i < size; i++) {
@@ -119,7 +122,33 @@ public:
 		}
 
 		if (knotIndex < 0) {
-			throw "Value out of range.";
+			throw "Value out of range.\n";
+		}
+		return getValue(knotIndex, size, coefs, argument - xvals[knotIndex]);
+	}
+
+	/**
+	 * Scalar implementation for evaluationg interpolation. Use when some safe guess of start knot is known.
+	 *
+	 * @param size # of elments
+	 * @param xvals
+	 * @param coefs
+	 * @param argument
+	 * @return
+	 */
+	inline static double getInterpolationWithStartIndex(size_t startKnot, size_t size,
+			std::vector<double> &xvals, AlignedCoefficients &coefs, double argument) {
+
+		int knotIndex = -1;
+		for (int i = startKnot; i < size; i++) {
+			if (xvals[i] > argument) {
+				knotIndex = i - 1;
+				break;
+			}
+		}
+
+		if (knotIndex < 0) {
+			throw "Value out of range.\n";
 		}
 		return getValue(knotIndex, size, coefs, argument - xvals[knotIndex]);
 	}
@@ -135,7 +164,7 @@ public:
 	 * @param coefs3
 	 * @return
 	 */
-	inline __m256d getValueVector(__m256d args, __m256d coefs0, __m256d coefs1,
+	inline static __m256d getValueVector(__m256d args, __m256d coefs0, __m256d coefs1,
 			__m256d coefs2, __m256d coefs3) {
 		__m256d res = _mm256_fmadd_pd(args, coefs3, coefs2);
 		res = _mm256_fmadd_pd(args, res, coefs1);
@@ -151,7 +180,7 @@ public:
 	 * @param argument
 	 * @return
 	 */
-	inline double getValue(size_t knotIndex, size_t size, AlignedCoefficients coefs, double argument) {
+	inline static double getValue(size_t knotIndex, size_t size, AlignedCoefficients &coefs, double argument) {
 
 		double res = coefs[size * 3 + knotIndex];
 

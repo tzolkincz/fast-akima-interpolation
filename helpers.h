@@ -11,6 +11,9 @@
  */
 void print(__m256d a);
 
+
+void printi(__m128i a);
+
 /**
  * Perform left rotation of packed double values vector
  *

@@ -8,6 +8,9 @@
 #include "../fast_akima.h"
 #include "../scalar_akima.h"
 #include "../interpolator.h"
+#include "../lib/glucose/GlucoseLevels.h"
+#include "../glucose/glucose_impl.h"
+#include "../glucose/wo_interface.h"
 
 
 #define timeNow() std::chrono::high_resolution_clock::now()
@@ -136,28 +139,26 @@ void simpleTest() {
 	int k = 0;
 	for (size_t i = 0; i < count - 5; i++) {
 		for (double j = 0.0; j < 1; j += 0.25) {
-			if (correctInterpol[k] - interpol.getInterpolation(count, x, coefsOfFastImpl, i + j) > EPSILON) {
+			if (correctInterpol[k] - Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j) > EPSILON) {
 				std::cout << correctInterpol[k] << " " << correctInterpol[k]
-						- interpol.getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
-				std::cout << i + j << "," << interpol.getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
+						- Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
+				std::cout << i + j << "," << Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
 				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
 						"results of interpolation are not correct " << std::endl;
 			}
 
 			k++;
-			//std::cout << std::setprecision(10) << interpol.getInterpolation(count, x, coefsOfFastImpl, i + j) << ", ";
-			//			std::cout << i + j << "," << interpol.getInterpolation(count, x, coefsOfFastImpl, i + j) << "\n";
 		}
 	}
 
 	for (size_t i = 0; i < count - 5; i++) {
 
 		__m256d arg = _mm256_setr_pd(i, i + 0.25, i + 0.5, i + 0.75);
-		__m256d res = interpol.getValueWithinOneKnot(i, count, coefsOfFastImpl, x, arg);
+		__m256d res = Interpolator::getValueWithinOneKnot(i, count, coefsOfFastImpl, x, arg);
 
 		int k = 0;
 		for (double j = 0.0; j < 1; j += 0.25) {
-			double in = interpol.getInterpolation(count, x, coefsOfFastImpl, i + j);
+			double in = Interpolator::getInterpolation(count, x, coefsOfFastImpl, i + j);
 			if (in - res[k++] > EPSILON) {
 				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
 						"vector interpolation failed on " << k << " th item" << std::endl;
@@ -171,13 +172,13 @@ void simpleTest() {
 	{
 		__m256d arg = _mm256_setr_pd(1, 2.25, 3.5, 4.75);
 		__m128i knotSteps = _mm_setr_epi32(1, 2, 3, 4);
-		__m256d resVector = interpol.getValueKnownKnots(0, knotSteps, count, coefsOfFastImpl, x, arg);
+		__m256d resVector = Interpolator::getValueKnownKnots(0, knotSteps, count, coefsOfFastImpl, x, arg);
 
 		__m256d resScalar = _mm256_setr_pd(
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 1),
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 2.25),
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 3.5),
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 4.75)
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 1),
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 2.25),
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 3.5),
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 4.75)
 				);
 
 		__m256d diffForCmp = _mm256_sub_pd(resScalar, resVector);
@@ -191,13 +192,13 @@ void simpleTest() {
 	//test getValueAnyNextKnot function
 	{
 		__m256d arg = _mm256_setr_pd(1, 2.25, 3.5, 4.75);
-		__m256d resVector = interpol.getValueAnyNextKnot(0, count, coefsOfFastImpl, x, arg);
+		__m256d resVector = Interpolator::getValueAnyNextKnot(0, count, coefsOfFastImpl, x, arg);
 
 		__m256d resScalar = _mm256_setr_pd(
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 1),
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 2.25),
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 3.5),
-				interpol.getInterpolation(count, x, coefsOfFastImpl, 4.75)
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 1),
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 2.25),
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 3.5),
+				Interpolator::getInterpolation(count, x, coefsOfFastImpl, 4.75)
 				);
 
 		__m256d diffForCmp = _mm256_sub_pd(resScalar, resVector);
@@ -211,6 +212,97 @@ void simpleTest() {
 
 }
 
+void glucoseTest() {
+
+	size_t cnt = 10;
+
+	//	CGlucoseLevels *gl = new CGlucoseLevels();
+	//	gl->SetLevelsCount(cnt);
+
+
+	std::vector<TGlucoseLevel> tl(cnt);
+	for (size_t i = 0; i < cnt; i++) {
+		TGlucoseLevel l;
+		l.datetime = 0.1 * i;
+		l.level = rand() * 0.0001;
+		tl[i] = l;
+	}
+
+
+	//	gl->SetLevels(tl);
+
+
+	//	GlucoseImplementation *gi = new GlucoseImplementation(tl);
+	//
+	//
+	//	double* levels = (double*)malloc(sizeof(double) * 2);
+	//	gi->GetLevels(0.3, 0.2, 2, levels, 0, 0);
+	//
+	//	printf("with glucose interface\n");
+	//	for (int i = 0; i < 2; i++) {
+	//		printf("%f\n", levels[i]);
+	//	}
+	//
+	//
+	//	free(levels);
+
+}
+
+void glucoseTest3() {
+
+	size_t cnt = 100;
+
+
+
+	printf("vals:\n");
+	std::vector<TGlucoseLevel> tl(cnt);
+	std::vector<double> times(cnt);
+	std::vector<double> vals(cnt);
+	for (size_t i = 0; i < cnt; i++) {
+		TGlucoseLevel l;
+		l.datetime = 0.1 * i;
+		l.level = rand() * 0.0001;
+
+		times[i] = l.datetime;
+		vals[i] = l.level;
+		tl[i] = l;
+	}
+
+
+	try {
+
+		FastAkima fastAkimaImpl;
+		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
+
+
+		TGlucoseLevelBounds *gb = new TGlucoseLevelBounds();
+		gb->MaxTime = times[cnt-1];
+
+		GlucoseWoInterface *m = new GlucoseWoInterface(gb);
+
+
+
+
+
+		size_t desired_levels_count = 4;
+		size_t filled;
+		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
+		m->GetLevels(0.12, 1, desired_levels_count, levels, &filled, 0, times, coefficients, cnt);
+
+		printf("with glucose interface %d\n", filled);
+		for (int i = 0; i < desired_levels_count; i++) {
+			printf("%f  %f\n", levels[i], Interpolator::getInterpolation(cnt, times, coefficients, i*1 + 0.12));
+		}
+
+
+		free(levels);
+
+	} catch (char const* msg) {
+		std::cout << msg;
+	}
+
+}
+
 int main(int argc, char** argv) {
 	std::cout << "%SUITE_STARTING% newsimpletest" << std::endl;
 	std::cout << "%SUITE_STARTED%" << std::endl;
@@ -220,7 +312,7 @@ int main(int argc, char** argv) {
 	std::cout << "%TEST_FINISHED% time=0 test1 (newsimpletest)" << std::endl;
 
 	std::cout << "%TEST_STARTED% test2 (newsimpletest)\n" << std::endl;
-	//	simplePerfTest();
+	glucoseTest3();
 	std::cout << "%TEST_FINISHED% time=0 test2 (newsimpletest)" << std::endl;
 
 	std::cout << "%SUITE_FINISHED% time=0" << std::endl;

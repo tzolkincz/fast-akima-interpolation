@@ -15,13 +15,17 @@ class CGlucoseLevels : public IGlucoseLevels, public virtual CReferenced, public
 protected:
 	std::vector<TGlucoseLevel> mLevels;
 public:
-	virtual ~CGlucoseLevels() {};
+
+	CGlucoseLevels() {};
+
+	virtual ~CGlucoseLevels();
 		//dctor has to be virtual, even if it is empty, due to the inheritance by dominance
 
 	HRESULT IfaceCalling GetLevels(TGlucoseLevel** levels);
 	HRESULT IfaceCalling GetLevelsCount(size_t* count);
 	HRESULT IfaceCalling SetLevelsCount(size_t count);
 	HRESULT IfaceCalling GetBounds(TGlucoseLevelBounds *bounds);
+	HRESULT IfaceCalling SetLevels(const std::vector<TGlucoseLevel> &levels);
 };
 
 #pragma warning( pop )

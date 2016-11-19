@@ -19,6 +19,12 @@
 #include "scalar_akima.h"
 
 
+#include "interpolator.h"
+#include "lib/glucose/GlucoseLevels.h"
+// #include "glucose/glucose_impl.h"
+#include "glucose/wo_interface.h"
+
+
 #define timeNow() std::chrono::high_resolution_clock::now()
 #define durationMs(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
 
@@ -45,7 +51,8 @@ void simplePerfTest() {
 	std::cout << "simple perf test 1" << std::endl;
 
 	//init values
-	size_t count = 10 * 1000 * 1000;
+//	size_t count = 1 * 1000 * 1000;
+	size_t count = 100* 1000;
 
 	std::vector<double> x(count);
 	std::vector<double> y(count);
@@ -65,7 +72,7 @@ void simplePerfTest() {
 
 		std::cout << "Fast impl took: " << durationMs(timeNow() - t1) << " ms\n";
 
-		printf("%f %f\n", coefsOfFastImpl[100], coefsOfFastImpl[100000]);
+		printf("%f %f\n", coefsOfFastImpl[100], coefsOfFastImpl[10000]);
 
 		t1 = timeNow();
 
@@ -83,6 +90,22 @@ void simplePerfTest() {
 
 		std::cout << "interpol took: " << durationMs(timeNow() - t1) << " ms\n";
 		std::cout << "anti optimizer: " << anti_optimalizator << " \n";
+
+
+		// test glucose interface perf
+		t1 = timeNow();
+
+
+
+		//		std::vector<double> levels(count);
+		//		CGlucoseLevels gl =
+
+
+
+		std::cout << "interpol took: " << durationMs(timeNow() - t1) << " ms\n";
+		std::cout << "anti optimizer: " << anti_optimalizator << " \n";
+
+
 	}
 
 	for (int i = 0; i < 10; i++) {
@@ -91,7 +114,74 @@ void simplePerfTest() {
 		auto coefsOfScalar = scalarImpl.computeCoefficients(count, x, y);
 
 		std::cout << "Scalar impl took: " << durationMs(timeNow() - t1) << " ms\n";
-		printf("%f %f\n", coefsOfScalar[100], coefsOfScalar[100000]);
+		printf("%f %f\n", coefsOfScalar[100], coefsOfScalar[10000]);
+	}
+
+}
+
+
+void glucoseTest4() {
+
+	size_t cnt = 1  *1000* 1000;
+
+
+
+	printf("vals:\n");
+	std::vector<TGlucoseLevel> tl(cnt);
+	std::vector<double> times(cnt);
+	std::vector<double> vals(cnt);
+	for (size_t i = 0; i < cnt; i++) {
+		TGlucoseLevel l;
+		l.datetime = i;
+		l.level = rand() * 0.0001;
+
+		times[i] = l.datetime;
+		vals[i] = l.level;
+		tl[i] = l;
+	}
+
+
+	try {
+
+		FastAkima fastAkimaImpl;
+		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
+
+
+		TGlucoseLevelBounds *gb = new TGlucoseLevelBounds();
+		gb->MaxTime = times[cnt - 1];
+
+		GlucoseWoInterface *m = new GlucoseWoInterface(gb);
+
+
+
+
+
+		size_t desired_levels_count = 4;
+		size_t filled;
+		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
+
+		double anti_opt = 0.0;
+
+		auto t1 = timeNow();
+		for (int j = 0; j < 1* 1000* 1000; j++) {
+			double dt = (rand() % (cnt -10)) + 0.1;
+			m->GetLevels(dt, 2.2, desired_levels_count, levels, &filled, 0, times, coefficients, cnt);
+			anti_opt += levels[1];
+
+		}
+		std::cout << "pentarysearch and interpol took: " << durationMs(timeNow() - t1) << " ms\n";
+		printf("anti_opt %f\n", anti_opt);
+
+		//		printf("with glucose interface %d\n", filled);
+		//		for (int i = 0; i < desired_levels_count; i++) {
+		//			printf("%f  %f\n", levels[i], Interpolator::getInterpolation(cnt, times, coefficients, i*0.2 + 0.32));
+		//		}
+
+
+		free(levels);
+
+	} catch (char const* msg) {
+		std::cout << msg;
 	}
 
 }
@@ -103,6 +193,8 @@ int main(int argc, char** argv) {
 
 
 	simplePerfTest();
+
+	glucoseTest4();
 
 	return 0;
 }

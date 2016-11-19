@@ -27,6 +27,10 @@ HRESULT IfaceCalling CGlucoseLevels::SetLevelsCount(size_t count) {
 	return S_OK;
 }
 
+HRESULT IfaceCalling CGlucoseLevels::SetLevels(const std::vector<TGlucoseLevel> &levels) {
+	mLevels = levels;
+	return S_OK;
+}
 
 class CFindBounds {
 	TGlucoseLevel *mLevels;
@@ -83,3 +87,6 @@ HRESULT IfaceCalling CGlucoseLevels::GetBounds(TGlucoseLevelBounds *bounds) {
 	*bounds = fb.mBounds;
 	return S_OK;
 }
+
+
+CGlucoseLevels::~CGlucoseLevels() {}
