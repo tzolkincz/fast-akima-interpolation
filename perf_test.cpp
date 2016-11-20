@@ -50,8 +50,8 @@ void simplePerfTest() {
 	std::cout << "simple perf test 1" << std::endl;
 
 	//init values
-//	size_t count = 1 * 1000 * 1000;
-	size_t count = 100* 1000;
+	//	size_t count = 1 * 1000 * 1000;
+	size_t count = 100 * 1000;
 
 	std::vector<double> x(count);
 	std::vector<double> y(count);
@@ -118,10 +118,9 @@ void simplePerfTest() {
 
 }
 
-
 void glucoseTest4() {
 
-	size_t cnt = 1  *1000* 1000;
+	size_t cnt = 1 * 1000 * 1000;
 
 
 
@@ -145,14 +144,10 @@ void glucoseTest4() {
 		FastAkima fastAkimaImpl;
 		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
 
-
 		TGlucoseLevelBounds *gb = new TGlucoseLevelBounds();
 		gb->MaxTime = times[cnt - 1];
 
 		GlucoseWoInterface *m = new GlucoseWoInterface(gb);
-
-
-
 
 
 		size_t desired_levels_count = 10;
@@ -162,11 +157,10 @@ void glucoseTest4() {
 		double anti_opt = 0.0;
 
 		auto t1 = timeNow();
-		for (int j = 0; j < 1* 1000* 1000; j++) {
-			double dt = (rand() % (cnt -10)) + 0.1;
+		for (int j = 0; j < 1 * 1000 * 1000; j++) {
+			double dt = (rand() % (cnt - 10)) + 0.1;
 			m->GetLevels(dt, 2.2, desired_levels_count, levels, &filled, 0, times, coefficients, cnt);
 			anti_opt += levels[1];
-
 		}
 		std::cout << "pentarysearch and interpol took: " << durationMs(timeNow() - t1) << " ms\n";
 		printf("anti_opt %f\n", anti_opt);

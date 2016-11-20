@@ -355,11 +355,8 @@ void glucoseInterfaceTestGlucoseArray() {
 
 }
 
-
-
-
 void glucoseInterfaceTestGlucoseArrayPerf1() {
-	size_t cnt = 10*1000*1000;
+	size_t cnt = 10 * 1000 * 1000;
 
 	std::vector<TGlucoseLevel> tl(cnt);
 	std::vector<double> times(cnt);
@@ -385,13 +382,12 @@ void glucoseInterfaceTestGlucoseArrayPerf1() {
 		GlucoseImplementation *m = new GlucoseImplementation(gl);
 		m->Approximate(new TApproximationParams);
 
-
-		const size_t desired_levels_count = 1*1000*1000;
-		double *desired_array = (double*)malloc(sizeof(double) *desired_levels_count);
+		const size_t desired_levels_count = 1 * 1000 * 1000;
+		double *desired_array = (double*) malloc(sizeof (double) *desired_levels_count);
 		//fill desired array
 		desired_array[0] = 0.1;
 		for (int i = 1; i < desired_levels_count; i++) {
-			desired_array[i] = desired_array[i -1] + rand() * 0.0000000001;
+			desired_array[i] = desired_array[i - 1] + rand() * 0.0000000001;
 		}
 
 
@@ -403,13 +399,13 @@ void glucoseInterfaceTestGlucoseArrayPerf1() {
 		std::cout << "get levels as array and interpol took: " << durationMs(timeNow() - t1) << " ms\n";
 
 		//commented out checks
-//		for (int i = 0; i < desired_levels_count; i++) {
-//			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, desired_array[i]) - levels[i])
-//					> EPSILON) {
-//				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
-//						"test glucose interface get levels as array" << std::endl;
-//			}
-//		}
+		//		for (int i = 0; i < desired_levels_count; i++) {
+		//			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, desired_array[i]) - levels[i])
+		//					> EPSILON) {
+		//				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+		//						"test glucose interface get levels as array" << std::endl;
+		//			}
+		//		}
 
 		free(levels);
 	} catch (char const* msg) {
