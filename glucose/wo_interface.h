@@ -109,7 +109,6 @@ public:
 			//potentially unsafe to access vector this way
 			if (params[3] >= levelsBounds->MaxTime) {
 				//vector would overflow
-				printf("vazne %f %d\n", desired_time, count);
 				break;
 			}
 

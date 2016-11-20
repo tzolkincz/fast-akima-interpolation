@@ -215,7 +215,6 @@ void glucoseTest() {
 
 	size_t cnt = 100;
 
-	printf("vals:\n");
 	std::vector<TGlucoseLevel> tl(cnt);
 	std::vector<double> times(cnt);
 	std::vector<double> vals(cnt);
@@ -229,15 +228,12 @@ void glucoseTest() {
 		tl[i] = l;
 	}
 
-
 	try {
-
 		FastAkima fastAkimaImpl;
 		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
 
-
 		TGlucoseLevelBounds *gb = new TGlucoseLevelBounds();
-		gb->MaxTime = times[cnt-1];
+		gb->MaxTime = times[cnt - 1];
 
 		GlucoseWoInterface *m = new GlucoseWoInterface(gb);
 
@@ -248,15 +244,61 @@ void glucoseTest() {
 		m->GetLevels(0.12, 1, desired_levels_count, levels, &filled, 0, times, coefficients, cnt);
 
 		for (int i = 0; i < desired_levels_count; i++) {
-			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, i*1 + 0.12) - levels[i])
+			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, i * 1 + 0.12) - levels[i])
 					> EPSILON) {
 				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
-					"test glucose interface get levels" << std::endl;
+						"test glucose interface get levels" << std::endl;
 			}
 		}
 
 		free(levels);
+	} catch (char const* msg) {
+		std::cout << msg;
+	}
 
+}
+
+void glucoseInterfaceTest() {
+	size_t cnt = 100;
+
+	std::vector<TGlucoseLevel> tl(cnt);
+	std::vector<double> times(cnt);
+	std::vector<double> vals(cnt);
+	for (size_t i = 0; i < cnt; i++) {
+		TGlucoseLevel l;
+		l.datetime = 0.1 * i;
+		l.level = rand() * 0.0001;
+
+		times[i] = l.datetime;
+		vals[i] = l.level;
+		tl[i] = l;
+	}
+
+	try {
+		FastAkima fastAkimaImpl;
+		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
+
+
+		CGlucoseLevels *gl = new CGlucoseLevels();
+		gl->SetLevelsCount(cnt);
+		gl->SetLevels(tl);
+
+		GlucoseImplementation *m = new GlucoseImplementation(gl);
+		m->Approximate(new TApproximationParams);
+
+		size_t desired_levels_count = 6;
+		size_t filled;
+		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
+		m->GetLevels(0.12, 1, desired_levels_count, levels, &filled, 0);
+		for (int i = 0; i < desired_levels_count; i++) {
+			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, i * 1 + 0.12) - levels[i])
+					> EPSILON) {
+				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+						"test glucose interface get levels" << std::endl;
+			}
+		}
+
+		free(levels);
 	} catch (char const* msg) {
 		std::cout << msg;
 	}
@@ -274,6 +316,10 @@ int main(int argc, char** argv) {
 	std::cout << "%TEST_STARTED% test2 (newsimpletest)\n" << std::endl;
 	glucoseTest();
 	std::cout << "%TEST_FINISHED% time=0 test2 (newsimpletest)" << std::endl;
+
+	std::cout << "%TEST_STARTED% test3 (newsimpletest)\n" << std::endl;
+	glucoseInterfaceTest();
+	std::cout << "%TEST_FINISHED% time=0 test3 (newsimpletest)" << std::endl;
 
 	std::cout << "%SUITE_FINISHED% time=0" << std::endl;
 

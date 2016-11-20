@@ -1,68 +1,6 @@
 
 #include "../lib/glucose/iface/ApproxIface.h"
-//#include "../lib/glucose/CommonApprox.h"
-
-
-
-
-
-
-
-
-
-
-
-
-typedef double floattype;
-
-#ifdef WIN32
-	#define IfaceCalling __stdcall
-#else
-	#define IfaceCalling //empty macro for unix systems
-#endif
-
-//typedef struct {
-//	floattype MinTime,
-//			  MaxTime,
-//			  MinLevel,
-//			  MaxLevel;
-//} TGlucoseLevelBounds;
-
-
-//#ifdef _WIN32
-//  #include <WTypes.h>
-//#else
-//  typedef int HRESULT;
-//  typedef ulong ULONG;
-//  const HRESULT S_OK = 0;
-//  const HRESULT S_FALSE = -1;
-//  const HRESULT E_INVALIDARG = 0x80070057;
-//  const HRESULT E_NOTIMPL = 0x80000001L;
-//
-//  #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
-//  #define FAILED(hr) (((HRESULT)(hr)) < 0)
-//#endif
-
-//typedef struct {
-//	floattype datetime;		//time of measuring
-//	floattype level;		//the glucose level/concetration measured
-//} TGlucoseLevel;
-
-
-//typedef struct {
-//	size_t ApproximationMethod;	// = apxmAverageExponential
-//	union {
-//		size_t avgexp;
-//	};
-//} TApproximationParams;
-
-
-
-
-
-
-
-
+#include "../lib/glucose/CommonApprox.h"
 
 
 #include <vector>
@@ -70,39 +8,37 @@ typedef double floattype;
 #ifndef GLUCOSE_IMPL_H
 #define GLUCOSE_IMPL_H
 
-//class GlucoseImplementation : public CCommonApprox {
-class GlucoseImplementation {
+class GlucoseImplementation : public CCommonApprox {
 private:
 	size_t count;
 	std::vector<double> times;
 	std::vector<double> levels;
 	AlignedCoefficients coefficients;
 	TGlucoseLevelBounds levelsBounds;
+	bool isApproximed = false;
 
 public:
 
-//	GlucoseImplementation(IGlucoseLevels *levelsContainer) : CCommonApprox(levelsContainer) {
-//	GlucoseImplementation(IGlucoseLevels *levelsContainer) {
-	GlucoseImplementation(TGlucoseLevel *levels) {
+	GlucoseImplementation(IGlucoseLevels *levelsContainer) : CCommonApprox(levelsContainer) {
 
-//		levelsContainer->GetLevelsCount(&count);
-//
-//		TGlucoseLevel *levels;
-//		levelsContainer->GetLevels(&levels);
+		levelsContainer->GetLevelsCount(&count);
+
+		TGlucoseLevel *g_levels;
+		levelsContainer->GetLevels(&g_levels);
+
+		times = std::vector<double>(count);
+		levels = std::vector<double>(count);
 
 		for (int i = 0; i < count; i++) {
-			this->times[i] = levels[i].datetime;
-			this->levels[i] = levels[i].level;
+			times[i] = g_levels[i].datetime;
+			levels[i] = g_levels[i].level;
 		}
 
-
-
-//		levelsContainer->GetBounds(&levelsBounds);
-
+		levelsContainer->GetBounds(&levelsBounds);
 	}
 
-
-//	virtual ~GlucoseImplementation();
+	virtual ~GlucoseImplementation() {
+	};
 	//dctor has to be virtual, even if it is empty, due to the inheritance by dominance
 
 
@@ -145,12 +81,12 @@ public:
 	 * @param filled
 	 * @return
 	 */
-//	HRESULT IfaceCalling GetLevels(floattype* times, size_t count,
-//			floattype *levels, size_t *filled);
-//
-//
-//
-//	HRESULT IfaceCalling GetBounds(TGlucoseLevelBounds *bounds);
+	HRESULT IfaceCalling GetLevels(floattype* times, size_t count,
+			floattype *levels, size_t *filled);
+
+
+
+	HRESULT IfaceCalling GetBounds(TGlucoseLevelBounds *bounds);
 };
 
 
