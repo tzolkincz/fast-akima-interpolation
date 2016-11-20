@@ -34,7 +34,7 @@ void printCoefficients(size_t count, AlignedCoefficients coefs) {
 }
 
 
-double EPSILON = 0.000000001;
+const double EPSILON = 0.000000001;
 
 /*
  hustý:
@@ -305,6 +305,119 @@ void glucoseInterfaceTest() {
 
 }
 
+void glucoseInterfaceTestGlucoseArray() {
+	size_t cnt = 100;
+
+	std::vector<TGlucoseLevel> tl(cnt);
+	std::vector<double> times(cnt);
+	std::vector<double> vals(cnt);
+	for (size_t i = 0; i < cnt; i++) {
+		TGlucoseLevel l;
+		l.datetime = 0.1 * i;
+		l.level = rand() * 0.0001;
+
+		times[i] = l.datetime;
+		vals[i] = l.level;
+		tl[i] = l;
+	}
+
+	try {
+		FastAkima fastAkimaImpl;
+		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
+
+
+		CGlucoseLevels *gl = new CGlucoseLevels();
+		gl->SetLevelsCount(cnt);
+		gl->SetLevels(tl);
+
+		GlucoseImplementation *m = new GlucoseImplementation(gl);
+		m->Approximate(new TApproximationParams);
+
+
+		const size_t desired_levels_count = 6;
+		double desired_array[desired_levels_count] = {0.12, 1.12, 2.12, 3.12, 4.12, 5.12};
+		size_t filled;
+		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
+		m->GetLevels(desired_array, desired_levels_count, levels, &filled);
+
+		for (int i = 0; i < desired_levels_count; i++) {
+			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, i * 1 + 0.12) - levels[i])
+					> EPSILON) {
+				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+						"test glucose interface get levels as array" << std::endl;
+			}
+		}
+
+		free(levels);
+	} catch (char const* msg) {
+		std::cout << msg;
+	}
+
+}
+
+
+
+
+void glucoseInterfaceTestGlucoseArrayPerf1() {
+	size_t cnt = 10*1000*1000;
+
+	std::vector<TGlucoseLevel> tl(cnt);
+	std::vector<double> times(cnt);
+	std::vector<double> vals(cnt);
+	for (size_t i = 0; i < cnt; i++) {
+		TGlucoseLevel l;
+		l.datetime = i;
+		l.level = rand() * 0.0001;
+
+		times[i] = l.datetime;
+		vals[i] = l.level;
+		tl[i] = l;
+	}
+
+	try {
+		FastAkima fastAkimaImpl;
+		auto coefficients = fastAkimaImpl.computeCoefficients(cnt, times, vals);
+
+		CGlucoseLevels *gl = new CGlucoseLevels();
+		gl->SetLevelsCount(cnt);
+		gl->SetLevels(tl);
+
+		GlucoseImplementation *m = new GlucoseImplementation(gl);
+		m->Approximate(new TApproximationParams);
+
+
+		const size_t desired_levels_count = 1*1000*1000;
+		double *desired_array = (double*)malloc(sizeof(double) *desired_levels_count);
+		//fill desired array
+		desired_array[0] = 0.1;
+		for (int i = 1; i < desired_levels_count; i++) {
+			desired_array[i] = desired_array[i -1] + rand() * 0.0000000001;
+		}
+
+
+		size_t filled;
+		double* levels = (double*) malloc(sizeof (double) * desired_levels_count);
+
+		auto t1 = timeNow();
+		m->GetLevels(desired_array, desired_levels_count, levels, &filled);
+		std::cout << "get levels as array and interpol took: " << durationMs(timeNow() - t1) << " ms\n";
+
+		//commented out checks
+//		for (int i = 0; i < desired_levels_count; i++) {
+//			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, desired_array[i]) - levels[i])
+//					> EPSILON) {
+//				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+//						"test glucose interface get levels as array" << std::endl;
+//			}
+//		}
+
+		free(levels);
+	} catch (char const* msg) {
+		std::cout << msg;
+	}
+
+}
+
 int main(int argc, char** argv) {
 	std::cout << "%SUITE_STARTING% newsimpletest" << std::endl;
 	std::cout << "%SUITE_STARTED%" << std::endl;
@@ -320,6 +433,15 @@ int main(int argc, char** argv) {
 	std::cout << "%TEST_STARTED% test3 (newsimpletest)\n" << std::endl;
 	glucoseInterfaceTest();
 	std::cout << "%TEST_FINISHED% time=0 test3 (newsimpletest)" << std::endl;
+
+	std::cout << "%TEST_STARTED% test3 (newsimpletest)\n" << std::endl;
+	glucoseInterfaceTestGlucoseArray();
+	std::cout << "%TEST_FINISHED% time=0 test3 (newsimpletest)" << std::endl;
+
+	std::cout << "%TEST_STARTED% test3 (newsimpletest)\n" << std::endl;
+	glucoseInterfaceTestGlucoseArrayPerf1();
+	std::cout << "%TEST_FINISHED% time=0 test3 (newsimpletest)" << std::endl;
+
 
 	std::cout << "%SUITE_FINISHED% time=0" << std::endl;
 

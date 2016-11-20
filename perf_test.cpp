@@ -24,7 +24,6 @@
 // #include "glucose/glucose_impl.h"
 #include "glucose/wo_interface.h"
 
-
 #define timeNow() std::chrono::high_resolution_clock::now()
 #define durationMs(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
 

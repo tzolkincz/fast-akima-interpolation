@@ -1,8 +1,8 @@
 
 #include "../helpers.h"
 
-#ifndef BEZ_SRACEK_H
-#define BEZ_SRACEK_H
+#ifndef WO_INTERFACE_H
+#define WO_INTERFACE_H
 
 class GlucoseWoInterface {
 private:
@@ -133,5 +133,5 @@ public:
 };
 
 
-#endif /* BEZ_SRACEK_H */
+#endif /* WO_INTERFACE_H */
 

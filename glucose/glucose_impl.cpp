@@ -79,11 +79,12 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype desired_time, fl
 		floattype* levels, size_t* filled, size_t derivationorder) {
 
 	if (stepping < 0) {
-		throw("stepping cannot be negative\n");
+		throw ("stepping cannot be negative\n");
 	}
 	if (!isApproximed) {
-		throw("Approximation was not yet computed. Call Approximate method first.\n");
+		throw ("Approximation was not yet computed. Call Approximate method first.\n");
 	}
+	(*filled) = 0; //reset counter
 
 	//perform vector binaray search for start knot of desired_time
 	size_t knotIndex = guessKnot(count, desired_time, &times[0]);
@@ -92,8 +93,8 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype desired_time, fl
 	__m256d baseParams = _mm256_add_pd(_mm256_set1_pd(desired_time), steppingVect);
 	__m256d shift = _mm256_set1_pd(stepping * 4);
 
-	int i = 0;
-	for (; i < cnt / 4; i += 4) {
+
+	for (size_t i = 0; i < cnt - (cnt % 4); i += 4) {
 		__m256d params = _mm256_fmadd_pd(_mm256_set1_pd(i), shift, baseParams);
 
 		//potentially unsafe to access vector this way
@@ -105,13 +106,13 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype desired_time, fl
 		__m256d res = Interpolator::getValueAnyNextKnot(knotIndex, count, coefficients, times, params);
 
 		//_mm256_stream_pd(&levels[i], res);
-		//cant use stream instuction (_mm256_stream_pd) because there is no garantee, caller aligned levels
+		//cant use stream instuction (_mm256_stream_pd) because there is no guarantee, caller aligned levels
 		_mm256_storeu_pd(&levels[i], res);
 		(*filled) += 4;
 	}
 
 	//rest with scalar code
-	for (; i < cnt && i * stepping + desired_time < levelsBounds.MaxTime; i++) {
+	for (size_t i = (*filled); i < cnt && i * stepping + desired_time < levelsBounds.MaxTime; i++) {
 		levels[i] = Interpolator::getInterpolationWithStartIndex(knotIndex, count, times,
 				coefficients, i * stepping + desired_time);
 		(*filled)++;
@@ -120,10 +121,53 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype desired_time, fl
 	return S_OK;
 }
 
-HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype* times, size_t count,
+HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype* tms, size_t cnt,
 		floattype *levels, size_t *filled) {
 
-	
+	if (!isApproximed) {
+		throw ("Approximation was not yet computed. Call Approximate method first.\n");
+	}
+	(*filled) = 0; //reset counter
+
+	double t_prev = tms[0];
+
+	size_t times_index = 0;
+	for (size_t i = 0; i < cnt - (cnt % 4); i += 4) {
+		if (t_prev > tms[i]) {
+			throw ("Times are not in ascendent order.\n");
+		}
+
+		t_prev = tms[i];
+		if (tms[i + 3] >= levelsBounds.MaxTime) {
+			break; //cant evaluate all vector after this point
+		}
+		//lineary find index
+		while (times[times_index] < tms[i]) {
+			times_index++;
+		}
+
+		__m256d params = _mm256_loadu_pd(&tms[i]);
+		__m256d res = Interpolator::getValueAnyNextKnot(times_index - 1, count, coefficients, times, params);
+		_mm256_storeu_pd(&levels[i], res); //cant use stream instruction - aligment is not guaranteed
+		(*filled) += 4;
+	}
+
+	for (size_t i = (*filled); i < cnt && tms[i] < levelsBounds.MaxTime; i++) {
+		if (t_prev > tms[i]) {
+			throw ("Times are not in ascendent order.\n");
+		}
+		t_prev = tms[i];
+
+		//lineary find index
+		while (times[times_index] < tms[i]) {
+			times_index++;
+		}
+
+		levels[i] = Interpolator::getInterpolationWithStartIndex(times_index - 1, count, times,
+				coefficients, tms[i]);
+		(*filled)++;
+	}
+
 	return E_NOTIMPL;
 }
 
