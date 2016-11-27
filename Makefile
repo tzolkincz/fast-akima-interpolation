@@ -50,8 +50,8 @@ CP=cp
 CCADMIN=CCadmin
 
 
-#test:
-#	icc helpers.cpp fast_akima.cpp scalar_akima.cpp  perfTest.cpp  -o perfTest -march=native -O3
+perf:
+	icc helpers.cpp fast_akima.cpp scalar_akima.cpp  perf_test.cpp  -o perfTest -march=native -O3
 
 # build
 build: .build-post
