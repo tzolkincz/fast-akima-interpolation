@@ -51,7 +51,7 @@ CCADMIN=CCadmin
 
 
 perf:
-	icc helpers.cpp fast_akima.cpp scalar_akima.cpp  perf_test.cpp  -o perfTest -march=native -O3
+	icc helpers.cpp fast_akima.cpp scalar_akima.cpp  perf_test.cpp  -o perfTest -march=native -O3 ; ./perfTest
 
 # build
 build: .build-post

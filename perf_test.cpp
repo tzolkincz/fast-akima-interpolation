@@ -50,8 +50,7 @@ void simplePerfTest() {
 	std::cout << "simple perf test 1" << std::endl;
 
 	//init values
-	//	size_t count = 1 * 1000 * 1000;
-	size_t count = 100 * 1000;
+	size_t count = 10 * 1000 * 1000;
 
 	std::vector<double> x(count);
 	std::vector<double> y(count);
@@ -63,7 +62,7 @@ void simplePerfTest() {
 	}
 
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 5; i++) {
 
 		auto t1 = timeNow();
 		FastAkima fastAkimaImpl;
@@ -80,11 +79,14 @@ void simplePerfTest() {
 		__m256d interPoints = _mm256_setr_pd(0, 0.25, 0.5, 0.75);
 
 		double anti_optimalizator = 0;
-		for (int i = 0; i < count - 1; i++) {
-			__m256d arg = _mm256_add_pd(_mm256_set1_pd(i), interPoints);
-			__m256d xx = _mm256_set1_pd(x[i]);
-			__m256d res = getValueGathers(i, 0, count, coefsOfFastImpl, _mm256_sub_pd(arg, xx));
-			anti_optimalizator += res[2];
+		for (int i = 0; i < 25; i++) {
+
+			for (int i = 0; i < count - 1; i++) {
+				__m256d arg = _mm256_add_pd(_mm256_set1_pd(i), interPoints);
+				__m256d xx = _mm256_set1_pd(x[i]);
+				__m256d res = getValueGathers(i, 0, count, coefsOfFastImpl, _mm256_sub_pd(arg, xx));
+				anti_optimalizator += res[2];
+			}
 		}
 
 		std::cout << "interpol took: " << durationMs(timeNow() - t1) << " ms\n";
