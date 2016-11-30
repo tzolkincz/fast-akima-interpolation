@@ -298,6 +298,16 @@ void glucoseInterfaceTest() {
 			}
 		}
 
+		//test first derivation
+		m->GetLevels(0.12, 1, desired_levels_count, levels, &filled, 1);
+		for (int i = 0; i < desired_levels_count; i++) {
+			if (fabs(Interpolator::getInterpolation(cnt, times, coefficients, i * 1 + 0.12, 1) - levels[i])
+					> EPSILON) {
+				std::cout << "%TEST_FAILED% time=0 testname=simpleTest (newsimpletest) message="
+						"test glucose interface get levels" << std::endl;
+			}
+		}
+
 		free(levels);
 	} catch (char const* msg) {
 		std::cout << msg;

@@ -112,7 +112,8 @@ public:
 				break;
 			}
 
-			__m256d res = Interpolator::getValueAnyNextKnot(knotIndex, count, coefficients, times, params);
+			__m256d res = Interpolator::getValueAnyNextKnot(knotIndex, count, coefficients, times,
+					params, derivationorder);
 
 			//_mm256_stream_pd(&levels[i], res);
 			//cant use stream instuction (_mm256_stream_pd) because there is no garantee, caller aligned levels
@@ -123,7 +124,7 @@ public:
 		//rest with scalar code
 		for (; i < cnt && i * stepping + desired_time < levelsBounds->MaxTime; i++) {
 			levels[i] = Interpolator::getInterpolationWithStartIndex(knotIndex, count, times,
-					coefficients, i * stepping + desired_time);
+					coefficients, i * stepping + desired_time, derivationorder);
 			(*filled)++;
 		}
 

@@ -103,7 +103,8 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype desired_time, fl
 			break;
 		}
 
-		__m256d res = Interpolator::getValueAnyNextKnot(knotIndex, count, coefficients, times, params);
+		__m256d res = Interpolator::getValueAnyNextKnot(knotIndex, count, coefficients, times,
+				params, derivationorder);
 
 		//_mm256_stream_pd(&levels[i], res);
 		//cant use stream instuction (_mm256_stream_pd) because there is no guarantee, caller aligned levels
@@ -114,7 +115,7 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype desired_time, fl
 	//rest with scalar code
 	for (size_t i = (*filled); i < cnt && i * stepping + desired_time < levelsBounds.MaxTime; i++) {
 		levels[i] = Interpolator::getInterpolationWithStartIndex(knotIndex, count, times,
-				coefficients, i * stepping + desired_time);
+				coefficients, i * stepping + desired_time, derivationorder);
 		(*filled)++;
 	}
 
@@ -147,7 +148,8 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype* tms, size_t cnt
 		}
 
 		__m256d params = _mm256_loadu_pd(&tms[i]);
-		__m256d res = Interpolator::getValueAnyNextKnot(times_index - 1, count, coefficients, times, params);
+		__m256d res = Interpolator::getValueAnyNextKnot(times_index - 1, count, coefficients,
+				times, params, 0);
 		_mm256_storeu_pd(&levels[i], res); //cant use stream instruction - aligment is not guaranteed
 		(*filled) += 4;
 	}
@@ -164,7 +166,7 @@ HRESULT IfaceCalling GlucoseImplementation::GetLevels(floattype* tms, size_t cnt
 		}
 
 		levels[i] = Interpolator::getInterpolationWithStartIndex(times_index - 1, count, times,
-				coefficients, tms[i]);
+				coefficients, tms[i], 0);
 		(*filled)++;
 	}
 
